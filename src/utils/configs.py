@@ -1,10 +1,14 @@
 import argparse
 import os
+import warnings
+
 from os.path import join
 
 
 class Configs(object):
     def __init__(self):
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+
         root_dir, _ = os.path.split(os.path.abspath(__file__))
         root_dir = os.path.dirname(root_dir)
         root_dir = os.path.dirname(root_dir)
@@ -85,6 +89,7 @@ class Configs(object):
 
         ## ---- to member variables -----
         for key, value in self.args.__dict__.items():
+            print('arg',key,'=',value)
             if key not in ['test', 'shuffle']:
                 exec('self.%s = self.args.%s' % (key, key))
 

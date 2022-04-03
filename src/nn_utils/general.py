@@ -101,7 +101,7 @@ def reconstruct(tensor, ref, keep, dim_reduced_keep=None):
 
 
 def add_wd(wd, scope=None):
-    scope = scope or tf.get_variable_scope().name
+    scope = scope or tf.compat.v1.get_variable_scope().name
     variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
     counter = 0
     with tf.name_scope("weight_decay"):
@@ -114,7 +114,7 @@ def add_wd(wd, scope=None):
 
 
 def add_wd_without_bias(wd, scope=None):
-    scope = scope or tf.get_variable_scope().name
+    scope = scope or tf.compat.v1.get_variable_scope().name
     variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
     counter = 0
     with tf.name_scope("weight_decay"):
@@ -128,7 +128,7 @@ def add_wd_without_bias(wd, scope=None):
 
 
 def add_reg_without_bias(scope=None):
-    scope = scope or tf.get_variable_scope().name
+    scope = scope or tf.compat.v1.get_variable_scope().name
     variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
     counter = 0
     for var in variables:

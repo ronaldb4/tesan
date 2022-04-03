@@ -90,7 +90,7 @@ class SwitchableDropoutWrapper(DropoutWrapper):
 
     def __call__(self, inputs, state, scope=None):
         outputs_do, new_state_do = super(SwitchableDropoutWrapper, self).__call__(inputs, state, scope=scope)
-        tf.get_variable_scope().reuse_variables()
+        tf.compat.v1.get_variable_scope().reuse_variables()
         outputs, new_state = self._cell(inputs, state, scope)
         outputs = tf.cond(self.is_train, lambda: outputs_do, lambda: outputs)
         if isinstance(state, tf.contrib.rnn.LSTMStateTuple):
@@ -126,10 +126,10 @@ class NormalSRUCell(tf.contrib.rnn.RNNCell):
         :param scope:
         :return:
         """
-        with tf.variable_scope(scope or "SRU_cell"):
-            b_f = tf.get_variable('b_f', [self._num_units], dtype=tf.float32,
+        with tf.compat.v1.variable_scope(scope or "SRU_cell"):
+            b_f = tf.compat.v1.get_variable('b_f', [self._num_units], dtype=tf.float32,
                                   initializer=tf.constant_initializer(0))
-            b_r = tf.get_variable('b_r', [self._num_units], dtype=tf.float32,
+            b_r = tf.compat.v1.get_variable('b_r', [self._num_units], dtype=tf.float32,
                                   initializer=tf.constant_initializer(0))
             U_d = bn_dense_layer(inputs, 3 * self._num_units, False, 0., 'get_frc', 'linear')  # bs, 3vec
             x_t = tf.identity(inputs, 'x_t')
@@ -161,11 +161,11 @@ def bi_sru_recurrent_network(
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
 
-    with tf.variable_scope(scope or 'bi_sru_recurrent_network'):
+    with tf.compat.v1.variable_scope(scope or 'bi_sru_recurrent_network'):
         # U_d = bn_dense_layer([rep_tensor], 6 * ivec, False, 0., 'get_frc', 'linear',
         #                    False, wd, keep_prob, is_train)  # bs, sl, 6vec
         # U_d_fw, U_d_bw = tf.split(U_d, 2, 2)
-        with tf.variable_scope('forward'):
+        with tf.compat.v1.variable_scope('forward'):
             U_d_fw = bn_dense_layer([rep_tensor], 3 * ivec, False, 0., 'get_frc_fw', 'linear',
                                     False, wd, keep_prob, is_train)  # bs, sl, 6vec
             U_fw = tf.concat([rep_tensor, U_d_fw], -1)
@@ -174,7 +174,7 @@ def bi_sru_recurrent_network(
                 fw_SRUCell, U_fw, tf.reduce_sum(tf.cast(rep_mask, tf.int32), -1),
                 dtype=tf.float32, scope='forward_sru')  # bs, sl, vec
 
-        with tf.variable_scope('backward'):
+        with tf.compat.v1.variable_scope('backward'):
             U_d_bw = bn_dense_layer([rep_tensor], 3 * ivec, False, 0., 'get_frc_bw', 'linear',
                                     False, wd, keep_prob, is_train)  # bs, sl, 6vec
             U_bw = tf.concat([rep_tensor, U_d_bw], -1)
@@ -208,9 +208,9 @@ class SRUCell(tf.contrib.rnn.RNNCell):
         :param state: [bs, vec]
         :return:
         """
-        b_f = tf.get_variable('b_f', [self._num_units], dtype=tf.float32,
+        b_f = tf.compat.v1.get_variable('b_f', [self._num_units], dtype=tf.float32,
                               initializer=tf.constant_initializer(0))
-        b_r = tf.get_variable('b_r', [self._num_units], dtype=tf.float32,
+        b_r = tf.compat.v1.get_variable('b_r', [self._num_units], dtype=tf.float32,
                               initializer=tf.constant_initializer(0))
 
         x_t, x_dt, f_t, r_t = tf.split(inputs, 4, 1)
@@ -239,8 +239,8 @@ def contextual_bi_rnn(tensor_rep, mask_rep, hn, cell_type, only_final=False,
     :param scope:
     :return:
     """
-    with tf.variable_scope(scope or 'contextual_bi_rnn'): # correct
-        reuse = None if not tf.get_variable_scope().reuse else True
+    with tf.compat.v1.variable_scope(scope or 'contextual_bi_rnn'): # correct
+        reuse = None if not tf.compat.v1.get_variable_scope().reuse else True
 
         if cell_type == 'sru':
             rnn_outputs = bi_sru_recurrent_network(

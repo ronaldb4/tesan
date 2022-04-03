@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 class ModelTemplate(metaclass=ABCMeta):
     def __init__(self, scope, dataset):
         self.scope = scope
-        self.global_step = tf.get_variable('global_step', shape=[], dtype=tf.int32,
+        self.global_step = tf.compat.v1.get_variable('global_step', shape=[], dtype=tf.int32,
                                            initializer=tf.constant_initializer(0), trainable=False)
 
         # ----------- parameters -------------

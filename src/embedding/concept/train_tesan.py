@@ -19,11 +19,11 @@ logging = RecordLog()
 def train():
 
     if cfg.gpu_mem is None:
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem, allow_growth=True)
-        graph_config = tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem, allow_growth=True)
+        graph_config = tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
     else:
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem)
-        graph_config = tf.ConfigProto(gpu_options=gpu_options)
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem)
+        graph_config = tf.compat.v1.ConfigProto(gpu_options=gpu_options)
 
     num_steps = cfg.num_steps
 
@@ -44,8 +44,8 @@ def train():
         batch_num = data_set.train_size / data_set.batch_size
         print(batch_num)
 
-    sess = tf.Session(config=graph_config)
-    with tf.variable_scope('concept_embedding') as scope:
+    sess = tf.compat.v1.Session(config=graph_config)
+    with tf.compat.v1.variable_scope('concept_embedding') as scope:
         model = Model(scope.name,data_set)
 
     graph_handler = GraphHandler(model,logging)
@@ -152,6 +152,6 @@ def output_model_params():
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()
     # --data_source mimic3 --model delta --gpu 2 --max_epoch 30 --num_steps 10000 --train_batch_size 64 --num_samples 10 --reduced_window True --skip_window 6 --verbose True --is_scale False --is_date_encoding False --task embedding
 # --data_source mimic3 --model sa --gpu 1 --max_epoch 30 --train_batch_size 64 --num_samples 10 --reduced_window True --skip_window 6 --verbose True --is_scale False --is_date_encoding False --task embedding --visit_threshold 1

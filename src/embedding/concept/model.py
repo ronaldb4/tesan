@@ -1,10 +1,19 @@
 import tensorflow as tf
 import math
 
-from src.nn_utils.attention import multi_dimensional_attention, self_attention_with_dense,\
-    temporal_delta_sa_with_dense, bn_dense_layer,time_aware_attention,\
-    temporal_date_sa_with_dense, delta_with_dense
-from src.embedding.concept.ablation_study import normal_attention
+# import attention models
+from src.nn_utils.attention import \
+    multi_dimensional_attention,\
+    self_attention_with_dense,\
+    temporal_delta_sa_with_dense,\
+    bn_dense_layer,\
+    time_aware_attention,\
+    temporal_date_sa_with_dense,\
+    delta_with_dense
+from src.embedding.concept.ablation_study import \
+    normal_attention
+
+
 from src.nn_utils.general import mask_for_high_rank
 from src.template.model import ModelTemplate
 
@@ -30,13 +39,13 @@ class ConceptModel(ModelTemplate):
 
         # ---- place holder -----
         if self.is_date_encoding:
-            self.train_inputs = tf.placeholder(tf.int32, shape=[None, None, 3], name='train_inputs')
+            self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 3], name='train_inputs')
             self.context_dates = self.train_inputs[:, :, 2]
         else:
-            self.train_inputs = tf.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
-            self.train_masks = tf.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
+            self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
+            self.train_masks = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
 
-        self.train_labels = tf.placeholder(tf.int32, shape=[None, 1], name='train_labels')
+        self.train_labels = tf.compat.v1.placeholder(tf.int32, shape=[None, 1], name='train_labels')
         self.valid_dataset = tf.constant(self.valid_samples, dtype=tf.int32, name='valid_samples')
 
         # ------------ other ---------

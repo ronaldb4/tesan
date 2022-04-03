@@ -17,13 +17,12 @@ logging = RecordLog()
 def train():
 
     if cfg.gpu_mem is None:
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem,
-                                    allow_growth=True)
-        graph_config = tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem, allow_growth=True)
+        graph_config = tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
 
     else:
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem)
-        graph_config = tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem)
+        graph_config = tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
 
     visit_threshold = 1
     num_steps = cfg.num_steps
@@ -40,8 +39,8 @@ def train():
     print(data_set.max_visits)
     print(data_set.max_len_visit)
 
-    sess = tf.Session(config=graph_config)
-    with tf.variable_scope('mortality_prediction') as scope:
+    sess = tf.compat.v1.Session(config=graph_config)
+    with tf.compat.v1.variable_scope('mortality_prediction') as scope:
         model = Model(scope.name, data_set)
 
     graph_handler = GraphHandler(model, logging)
@@ -130,7 +129,7 @@ def output_model_params():
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()
 
 
 

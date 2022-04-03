@@ -61,12 +61,12 @@ def softsel_with_dropout(target, logits, mask=None,
 
 
 def _linear(xs, output_size, bias,bias_start=0., scope=None):
-    with tf.variable_scope(scope or 'linear_layer'):
+    with tf.compat.v1.variable_scope(scope or 'linear_layer'):
         x = tf.concat(xs,-1)
         input_size = x.get_shape()[-1]
-        W = tf.get_variable('W', shape=[input_size,output_size],dtype=tf.float32,)
+        W = tf.compat.v1.get_variable('W', shape=[input_size,output_size],dtype=tf.float32,)
         if bias:
-            bias = tf.get_variable('bias', shape=[output_size],dtype=tf.float32,
+            bias = tf.compat.v1.get_variable('bias', shape=[output_size],dtype=tf.float32,
                                    initializer=tf.constant_initializer(bias_start))
             out = tf.matmul(x, W) + bias
         else:
@@ -101,17 +101,17 @@ def linear(args, output_size, bias, bias_start=0.0, scope=None, squeeze=False, w
 def linear_3d(tensor, hn, bias, bias_start=0.0, scope=None, squeeze=False, wd=0.0, input_keep_prob=1.0,
               is_train=None):
 
-    with tf.variable_scope(scope or 'linear_3d'):
+    with tf.compat.v1.variable_scope(scope or 'linear_3d'):
         assert len(tensor.get_shape().as_list()) == 3
         num_int = tensor.get_shape()[0]
         vec_int = tensor.get_shape()[-1]
-        weight_3d = tf.get_variable('weight_3d', [num_int, vec_int, hn], tf.float32)
+        weight_3d = tf.compat.v1.get_variable('weight_3d', [num_int, vec_int, hn], tf.float32)
 
         if input_keep_prob < 1.0:
             assert is_train is not None
             tensor = tf.cond(is_train, lambda: tf.nn.dropout(tensor, input_keep_prob), lambda: tensor)
         if bias:
-            bias_3d = tf.get_variable('bias_3d', [num_int, 1, hn], tf.float32,
+            bias_3d = tf.compat.v1.get_variable('bias_3d', [num_int, 1, hn], tf.float32,
                                       tf.constant_initializer(bias_start))
             linear_output = tf.matmul(tensor, weight_3d) + bias_3d
         else:
@@ -126,10 +126,10 @@ def linear_3d(tensor, hn, bias, bias_start=0.0, scope=None, squeeze=False, wd=0.
 
 
 def conv1d(in_, filter_size, height, padding, is_train=None, keep_prob=1.0, scope=None):
-    with tf.variable_scope(scope or "conv1d"):
+    with tf.compat.v1.variable_scope(scope or "conv1d"):
         num_channels = in_.get_shape()[-1] #dc
-        filter_ = tf.get_variable("filter", shape=[1, height, num_channels, filter_size], dtype='float')
-        bias = tf.get_variable("bias", shape=[filter_size], dtype='float')
+        filter_ = tf.compat.v1.get_variable("filter", shape=[1, height, num_channels, filter_size], dtype='float')
+        bias = tf.compat.v1.get_variable("bias", shape=[filter_size], dtype='float')
         strides = [1, 1, 1, 1]
         if is_train is not None and keep_prob < 1.0:
             in_ = dropout(in_, keep_prob, is_train)
@@ -139,7 +139,7 @@ def conv1d(in_, filter_size, height, padding, is_train=None, keep_prob=1.0, scop
 
 
 def multi_conv1d(in_, filter_sizes, heights, padding, is_train=None, keep_prob=1.0, scope=None):
-    with tf.variable_scope(scope or "multi_conv1d"):
+    with tf.compat.v1.variable_scope(scope or "multi_conv1d"):
         assert len(filter_sizes) == len(heights)
         outs = []
         for filter_size, height in zip(filter_sizes, heights):
@@ -153,7 +153,7 @@ def multi_conv1d(in_, filter_sizes, heights, padding, is_train=None, keep_prob=1
 
 
 def highway_layer(arg, bias, bias_start=0.0, scope=None, wd=0.0, input_keep_prob=1.0, is_train=None):
-    with tf.variable_scope(scope or "highway_layer"):
+    with tf.compat.v1.variable_scope(scope or "highway_layer"):
         d = arg.get_shape()[-1]  # embedding dim
         trans = linear([arg], d, bias, bias_start=bias_start, scope='trans', wd=wd, input_keep_prob=input_keep_prob,
                        is_train=is_train)
@@ -168,7 +168,7 @@ def highway_layer(arg, bias, bias_start=0.0, scope=None, wd=0.0, input_keep_prob
 
 
 def highway_network(arg, num_layers, bias, bias_start=0.0, scope=None, wd=0.0, input_keep_prob=1.0, is_train=None):
-    with tf.variable_scope(scope or "highway_network"):
+    with tf.compat.v1.variable_scope(scope or "highway_network"):
         prev = arg
         cur = None
         for layer_idx in range(num_layers):
@@ -182,11 +182,9 @@ def highway_net(
         input_tensor, hn, bias, bias_start=0.0, scope=None, activation='relu', enable_bn=False,
         wd=0., keep_prob=1.0, is_train=None):
     ivec = input_tensor.get_shape().as_list()[-1]
-    with tf.variable_scope(scope or "highway_layer"):
-        trans = bn_dense_layer(
-            input_tensor, ivec, bias, bias_start, 'map', activation, enable_bn, wd, keep_prob, is_train)
-        gate = bn_dense_layer(
-            input_tensor, ivec, bias, bias_start, 'gate', 'linear', enable_bn, wd, keep_prob, is_train)
+    with tf.compat.v1.variable_scope(scope or "highway_layer"):
+        trans = bn_dense_layer(input_tensor, ivec, bias, bias_start, 'map', activation, enable_bn, wd, keep_prob, is_train)
+        gate =  bn_dense_layer(input_tensor, ivec, bias, bias_start, 'gate', 'linear', enable_bn, wd, keep_prob, is_train)
         gate = tf.nn.sigmoid(gate)
         out = gate * trans + (1 - gate) * input_tensor
 
@@ -233,7 +231,7 @@ def get_logits(args, size, bias, bias_start=0.0, scope=None, mask=None, wd=0.0,
 
 def double_linear_logits(args, size, bias, bias_start=0.0, scope=None, mask=None, wd=0.0, input_keep_prob=1.0,
                          is_train=None):
-    with tf.variable_scope(scope or "Double_Linear_Logits"):
+    with tf.compat.v1.variable_scope(scope or "Double_Linear_Logits"):
         first = tf.tanh(linear(args, size, bias, bias_start=bias_start, scope='first',
                                wd=wd, input_keep_prob=input_keep_prob, is_train=is_train))
         second = linear(first, 1, bias, bias_start=bias_start, squeeze=True, scope='second',
@@ -244,7 +242,7 @@ def double_linear_logits(args, size, bias, bias_start=0.0, scope=None, mask=None
 
 
 def linear_logits(args, bias, bias_start=0.0, scope=None, mask=None, wd=0.0, input_keep_prob=1.0, is_train=None):
-    with tf.variable_scope(scope or "Linear_Logits"):
+    with tf.compat.v1.variable_scope(scope or "Linear_Logits"):
         logits = linear(args, 1, bias, bias_start=bias_start, squeeze=True, scope='first',
                         wd=wd, input_keep_prob=input_keep_prob, is_train=is_train)
         if mask is not None:
@@ -284,7 +282,7 @@ def feature_combination(org_tensor, new_features, wd=0., keep_prob=1., is_train=
     :return: 
     """
 
-    with tf.variable_scope(scope or 'fea_comb'):
+    with tf.compat.v1.variable_scope(scope or 'fea_comb'):
         bs, sl, vec = tf.shape(org_tensor)[0],tf.shape(org_tensor)[1],tf.shape(org_tensor)[2]
         vec_int = org_tensor.get_shape()[2]
         features = [new_fea if len(new_fea.get_shape().as_list())==3 else tf.expand_dims(new_fea, 1)
@@ -334,7 +332,7 @@ def fusion_two_mat(input1, input2, hn=None, scope=None, wd=0., keep_prob=1., is_
     ivec2 = input2.get_shape()[-1]
     if hn is None:
         hn = ivec1
-    with tf.variable_scope(scope or 'fusion_two_mat'):
+    with tf.compat.v1.variable_scope(scope or 'fusion_two_mat'):
         part1 = linear(input1, hn, False, 0., 'linear_1', False, wd, keep_prob, is_train)
         part2 = linear(input2, hn, True, 0., 'linear_2', False, wd, keep_prob, is_train)
         return part1 + part2
@@ -363,7 +361,7 @@ def bn_dense_layer(input_tensor, hn, bias, bias_start=0.0, scope=None,
     else:
         raise AttributeError('no activation function named as %s' % activation)
 
-    with tf.variable_scope(scope or 'bn_dense_layer'):
+    with tf.compat.v1.variable_scope(scope or 'bn_dense_layer'):
         linear_map = linear(input_tensor, hn, bias, bias_start, 'linear_map', False, wd, keep_prob, is_train)
         if enable_bn:
             linear_map = tf.contrib.layers.batch_norm(
@@ -375,7 +373,7 @@ def bn_dense_layer(input_tensor, hn, bias, bias_start=0.0, scope=None,
 
 
 def bn_layer(input_tensor, is_train, enable,scope=None):
-    with tf.variable_scope(scope or 'bn_layer'):
+    with tf.compat.v1.variable_scope(scope or 'bn_layer'):
         if enable:
             return tf.contrib.layers.batch_norm(
                 input_tensor, center=True, scale=True, is_training=is_train, scope='bn')
@@ -396,19 +394,19 @@ def generate_embedding_mat(dict_size, emb_len, init_mat=None, extra_mat=None,
     :param scope:
     :return: if extra_mat is None, return[dict_size+extra_dict_size,emb_len], else [dict_size,emb_len]
     """
-    with tf.variable_scope(scope or 'gene_emb_mat'):
+    with tf.compat.v1.variable_scope(scope or 'gene_emb_mat'):
         emb_mat_ept_and_unk = tf.constant(value=0, dtype=tf.float32, shape=[2, emb_len])
         if init_mat is None:
-            emb_mat_other = tf.get_variable('emb_mat',[dict_size - 2, emb_len], tf.float32)
+            emb_mat_other = tf.compat.v1.get_variable('emb_mat',[dict_size - 2, emb_len], tf.float32)
         else:
-            emb_mat_other = tf.get_variable("emb_mat",[dict_size - 2, emb_len], tf.float32,
+            emb_mat_other = tf.compat.v1.get_variable("emb_mat",[dict_size - 2, emb_len], tf.float32,
                                             initializer=tf.constant_initializer(init_mat[2:], dtype=tf.float32,
                                                                                 verify_shape=True))
         emb_mat = tf.concat([emb_mat_ept_and_unk, emb_mat_other], 0)
 
         if extra_mat is not None:
             if extra_trainable:
-                extra_mat_var = tf.get_variable("extra_emb_mat",extra_mat.shape, tf.float32,
+                extra_mat_var = tf.compat.v1.get_variable("extra_emb_mat",extra_mat.shape, tf.float32,
                                                 initializer=tf.constant_initializer(extra_mat,
                                                                                     dtype=tf.float32,
                                                                                     verify_shape=True))
@@ -425,9 +423,9 @@ def token_and_char_emb(if_token_emb=True, context_token=None, tds=None, tel=None
                        if_char_emb=True, context_char=None, cds=None, cel=None,
                        cos=None, ocd=None, fh=None, use_highway=True,highway_layer_num=None,
                        wd=0., keep_prob=1., is_train=None):
-    with tf.variable_scope('token_and_char_emb'):
+    with tf.compat.v1.variable_scope('token_and_char_emb'):
         if if_token_emb:
-            with tf.variable_scope('token_emb'):
+            with tf.compat.v1.variable_scope('token_emb'):
                 token_emb_mat = generate_embedding_mat(tds, tel, init_mat=token_emb_mat,
                                                        extra_mat=glove_emb_mat,
                                                        scope='gene_token_emb_mat')
@@ -435,13 +433,13 @@ def token_and_char_emb(if_token_emb=True, context_token=None, tds=None, tel=None
                 c_token_emb = tf.nn.embedding_lookup(token_emb_mat, context_token)  # bs,sl,tel
 
         if if_char_emb:
-            with tf.variable_scope('char_emb'):
+            with tf.compat.v1.variable_scope('char_emb'):
                 char_emb_mat = generate_embedding_mat(cds, cel, scope='gene_char_emb_mat')
                 c_char_lu_emb = tf.nn.embedding_lookup(char_emb_mat, context_char)  # bs,sl,tl,cel
 
                 assert sum(ocd) == cos and len(ocd) == len(fh)
 
-                with tf.variable_scope('conv'):
+                with tf.compat.v1.variable_scope('conv'):
                     c_char_emb = multi_conv1d(c_char_lu_emb, ocd, fh, "VALID",
                                               is_train, keep_prob, scope="xx")  # bs,sl,cocn
         if if_token_emb and if_char_emb:
@@ -454,7 +452,7 @@ def token_and_char_emb(if_token_emb=True, context_token=None, tds=None, tel=None
             raise AttributeError('No embedding!')
 
     if use_highway:
-        with tf.variable_scope('highway'):
+        with tf.compat.v1.variable_scope('highway'):
             c_emb = highway_network(c_emb, highway_layer_num, True, wd=wd,
                                     input_keep_prob=keep_prob,is_train=is_train)
     return c_emb
@@ -462,7 +460,7 @@ def token_and_char_emb(if_token_emb=True, context_token=None, tds=None, tel=None
 
 def generate_feature_emb_for_c_and_q(feature_dict_size, feature_emb_len,
                                      feature_name , c_feature, q_feature=None, scope=None):
-    with tf.variable_scope(scope or '%s_feature_emb' % feature_name):
+    with tf.compat.v1.variable_scope(scope or '%s_feature_emb' % feature_name):
         emb_mat = generate_embedding_mat(feature_dict_size, feature_emb_len, scope='emb_mat')
         c_feature_emb = tf.nn.embedding_lookup(emb_mat, c_feature)
         if q_feature is not None:

@@ -17,9 +17,9 @@ class MortalityModel(ModelTemplate):
         self.max_len_visit = dataset.max_len_visit
         self.vocabulary_size = len(dataset.dictionary)
         # ---- place holder -----
-        self.inputs = tf.placeholder(tf.int32, shape=[None, self.max_visits, self.max_len_visit],
+        self.inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, self.max_visits, self.max_len_visit],
                                      name='train_inputs')  # batch_size,max_visits, max_visit_len
-        self.labels = tf.placeholder(tf.int32, shape=[None, 1],
+        self.labels = tf.compat.v1.placeholder(tf.int32, shape=[None, 1],
                                      name='train_labels')  # batch_size, binary classification
         # ---- masks for padding -----
         self.inputs_mask = tf.cast(self.inputs, tf.bool)
@@ -137,7 +137,7 @@ class MortalityModel(ModelTemplate):
             tensor_len = tf.reduce_sum(tf.cast(visit_mask, tf.int32), -1)  # [bs]
 
         with tf.name_scope('RNN_computaion'):
-            reuse = None if not tf.get_variable_scope().reuse else True
+            reuse = None if not tf.compat.v1.get_variable_scope().reuse else True
             if cfg.cell_type == 'gru':
                 cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
             elif cfg.cell_type == 'lstm':

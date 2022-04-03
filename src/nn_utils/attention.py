@@ -14,7 +14,7 @@ def traditional_attention(rep_tensor, rep_mask, scope=None,
                           tensor_dict=None, name=None):
     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape()[2]
-    with tf.variable_scope(scope or 'traditional_attention'):
+    with tf.compat.v1.variable_scope(scope or 'traditional_attention'):
         rep_tensor_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
                                         False, wd, keep_prob, is_train)
 
@@ -32,7 +32,7 @@ def traditional_attention(rep_tensor, rep_mask, scope=None,
 def multi_dimensional_attention(rep_tensor, rep_mask, keep_prob=1., is_train=None, wd=0., activation='relu'):
     # bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape()[2]
-    with tf.variable_scope('multi_dimensional_attention'):
+    with tf.compat.v1.variable_scope('multi_dimensional_attention'):
         map1 = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map1', activation,
                               False, wd, keep_prob, is_train)
         map2 = bn_dense_layer(map1, ivec, True, 0., 'bn_dense_map2', 'linear',
@@ -53,7 +53,7 @@ def directional_attention_with_dense(
     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
-    with tf.variable_scope(scope or 'directional_attention_%s' % direction or 'diag'):
+    with tf.compat.v1.variable_scope(scope or 'directional_attention_%s' % direction or 'diag'):
         # mask generation
         sl_indices = tf.range(sl, dtype=tf.int32)
         sl_col, sl_row = tf.meshgrid(sl_indices, sl_indices)
@@ -75,8 +75,8 @@ def directional_attention_with_dense(
         rep_map_dp = dropout(rep_map, keep_prob, is_train)
 
         # attention
-        with tf.variable_scope('attention'):  # bs,sl,sl,vec
-            f_bias = tf.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+            f_bias = tf.compat.v1.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # bs,sl,vec
             dependent_etd = tf.expand_dims(dependent, 1)  # bs,1,sl,vec
             head = linear(rep_map_dp, ivec, False, scope='linear_head') # bs,sl,vec
@@ -90,8 +90,8 @@ def directional_attention_with_dense(
 
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -109,12 +109,17 @@ def directional_attention_with_dense(
         return output
 
 
+
+###########################################################################
+# differs from similarly named in ablation_study.py - appears unused
+###########################################################################
+"""
 def normal_attention(rep_tensor, rep_mask, scope=None,
                           keep_prob=1., is_train=None, wd=0., activation='elu',
                           tensor_dict=None, name=None):
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape()[2]
-    with tf.variable_scope(scope or 'normal_attention'):
+    with tf.compat.v1.variable_scope(scope or 'normal_attention'):
         rep_tensor_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
                                         False, wd, keep_prob, is_train)
 
@@ -126,8 +131,8 @@ def normal_attention(rep_tensor, rep_mask, scope=None,
         if tensor_dict is not None and name is not None:
             tensor_dict[name] = tf.nn.softmax(rep_tensor_logits)
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_tensor_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -136,6 +141,7 @@ def normal_attention(rep_tensor, rep_mask, scope=None,
             output = fusion_gate * rep_tensor_map + (1-fusion_gate) * attn_result
             output = mask_for_high_rank(output, rep_mask)# bs,sl,vec
         return output
+"""
 
 
 def delta_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
@@ -144,7 +150,7 @@ def delta_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
-    with tf.variable_scope('temporal_attention'):
+    with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
@@ -159,8 +165,8 @@ def delta_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
         time_rep_map_dp = dropout(time_rep_map, keep_prob, is_train)
 
         # attention
-        with tf.variable_scope('attention'):  # bs,sl,sl,vec
-            f_bias = tf.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+            f_bias = tf.compat.v1.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
 
             time_rep_etd = linear(time_rep_map_dp, ivec, False, scope='linear_time') # bs,sl,sl,vec
 
@@ -168,7 +174,7 @@ def delta_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
             if is_scale:
                 logits = scaled_tanh(attention_fact, 5.0)  # bs,sl,sl,vec
             else:
-                fact_bias = tf.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+                fact_bias = tf.compat.v1.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
                 logits = linear(tf.nn.tanh(attention_fact), ivec, False, scope='linear_attn_fact') + fact_bias
 
             logits_masked = exp_mask_for_high_rank(logits, attn_mask)
@@ -177,8 +183,8 @@ def delta_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
 
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -194,7 +200,7 @@ def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
-    with tf.variable_scope('temporal_attention'):
+    with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
@@ -205,8 +211,8 @@ def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
         rep_map_dp = dropout(rep_map, keep_prob, is_train)
 
         # attention
-        with tf.variable_scope('attention'):  # bs,sl,sl,vec
-            f_bias = tf.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+            f_bias = tf.compat.v1.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
 
             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # bs,sl,vec
             dependent_etd = tf.expand_dims(dependent, 1)  # bs,1,sl,vec
@@ -218,7 +224,7 @@ def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
             if is_scale:
                 logits = scaled_tanh(attention_fact, 5.0)  # bs,sl,sl,vec
             else:
-                fact_bias = tf.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+                fact_bias = tf.compat.v1.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
                 logits = linear(tf.nn.tanh(attention_fact), ivec, False, scope='linear_attn_fact')+fact_bias
 
             logits_masked = exp_mask_for_high_rank(logits, attn_mask)
@@ -227,8 +233,8 @@ def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
 
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -246,7 +252,7 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
-    with tf.variable_scope('temporal_attention'):
+    with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
@@ -262,8 +268,8 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
         time_rep_map_dp = dropout(time_rep_map, keep_prob, is_train)
 
         # attention
-        with tf.variable_scope('attention'):  # bs,sl,sl,vec
-            f_bias = tf.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+            f_bias = tf.compat.v1.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
 
             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # bs,sl,vec
             dependent_etd = tf.expand_dims(dependent, 1)  # bs,1,sl,vec
@@ -278,7 +284,7 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
             if is_scale:
                 logits = scaled_tanh(attention_fact, 5.0)  # bs,sl,sl,vec
             else:
-                fact_bias = tf.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+                fact_bias = tf.compat.v1.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
                 logits = linear(tf.nn.tanh(attention_fact), ivec, False, scope='linear_attn_fact') + fact_bias
 
             logits_masked = exp_mask_for_high_rank(logits, attn_mask)
@@ -287,8 +293,8 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
 
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -306,7 +312,7 @@ def temporal_date_sa_with_dense(rep_tensor, rep_mask, date_tensor, keep_prob=1.,
         batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
         ivec = rep_tensor.get_shape().as_list()[2]
         ivec = hn or ivec
-        with tf.variable_scope('temporal_attention'):
+        with tf.compat.v1.variable_scope('temporal_attention'):
             # mask generation
             attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)# batch_size, code_len, code_len
 
@@ -322,8 +328,8 @@ def temporal_date_sa_with_dense(rep_tensor, rep_mask, date_tensor, keep_prob=1.,
             date_rep_map_dp = dropout(date_rep_map, keep_prob, is_train)
 
             # attention
-            with tf.variable_scope('attention'):  # bs,sl,sl,vec
-                f_bias = tf.get_variable('f_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+            with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+                f_bias = tf.compat.v1.get_variable('f_bias', [ivec], tf.float32, tf.constant_initializer(0.))
                 dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  #batch_size, code_len, vec_size
                 dependent_etd = tf.expand_dims(dependent, 1)  #batch_size, code_len,code_len, vec_size
                 head = linear(rep_map_dp, ivec, False, scope='linear_head')  #batch_size, code_len, vec_size
@@ -340,7 +346,7 @@ def temporal_date_sa_with_dense(rep_tensor, rep_mask, date_tensor, keep_prob=1.,
                 if is_scale:
                     logits = scaled_tanh(attention_fact, 5.0)  # bs,sl,sl,vec
                 else:
-                    fact_bias = tf.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+                    fact_bias = tf.compat.v1.get_variable('fact_bias', [ivec], tf.float32, tf.constant_initializer(0.))
                     logits = linear(tf.nn.tanh(attention_fact), ivec, False, scope='linear_attn_fact') + fact_bias
 
                 logits_masked = exp_mask_for_high_rank(logits, attn_mask)
@@ -349,8 +355,8 @@ def temporal_date_sa_with_dense(rep_tensor, rep_mask, date_tensor, keep_prob=1.,
 
                 attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-            with tf.variable_scope('output'):
-                o_bias = tf.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+            with tf.compat.v1.variable_scope('output'):
+                o_bias = tf.compat.v1.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
                 # input gate
                 fusion_gate = tf.nn.sigmoid(
                     linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -363,7 +369,7 @@ def temporal_date_sa_with_dense(rep_tensor, rep_mask, date_tensor, keep_prob=1.,
 
 
 def time_aware_attention(train_inputs, embed, mask, embedding_size, k):
-    with tf.variable_scope('time_aware_attention'):
+    with tf.compat.v1.variable_scope('time_aware_attention'):
         attn_weights = tf.Variable(tf.truncated_normal([embedding_size, k], stddev=1.0 / math.sqrt(k)))
         attn_biases = tf.Variable(tf.zeros([k]))
 
@@ -409,8 +415,8 @@ def time_aware_attention(train_inputs, embed, mask, embedding_size, k):
 
 def fusion_gate(rep1,rep2,wd, keep_prob, is_train):
     ivec = rep1.get_shape().as_list()[1]
-    with tf.variable_scope('output'):
-        o_bias = tf.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+    with tf.compat.v1.variable_scope('output'):
+        o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
         # input gate
         fusion_g = tf.nn.sigmoid(
             linear(rep1, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -429,7 +435,7 @@ def visit_temporal_date_sa_with_dense(rep_tensor, date_tensor,
     batch_size, sw_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
-    with tf.variable_scope('temporal_attention'):
+    with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.diag(- tf.ones([sw_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
@@ -445,9 +451,9 @@ def visit_temporal_date_sa_with_dense(rep_tensor, date_tensor,
         date_rep_map_dp = dropout(date_rep_map, keep_prob, is_train)
 
         # attention
-        with tf.variable_scope('attention'):  # bs,sl,sl,vec
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
 
-            f_bias = tf.get_variable('f_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+            f_bias = tf.compat.v1.get_variable('f_bias', [ivec], tf.float32, tf.constant_initializer(0.))
             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # batch_size, code_len, vec_size
             dependent_etd = tf.expand_dims(dependent, 1)  # batch_size, code_len,code_len, vec_size
             head = linear(rep_map_dp, ivec, False, scope='linear_head')  # batch_size, code_len, vec_size
@@ -479,8 +485,8 @@ def visit_temporal_date_sa_with_dense(rep_tensor, date_tensor,
 
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -497,7 +503,7 @@ def visit_sa_with_dense(rep_tensor, keep_prob=1.,is_train=None, wd=0.,
     batch_size, sw_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
-    with tf.variable_scope('temporal_attention'):
+    with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.diag(- tf.ones([sw_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
@@ -508,9 +514,9 @@ def visit_sa_with_dense(rep_tensor, keep_prob=1.,is_train=None, wd=0.,
         rep_map_dp = dropout(rep_map, keep_prob, is_train)
 
         # attention
-        with tf.variable_scope('attention'):  # bs,sl,sl,vec
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
 
-            f_bias = tf.get_variable('f_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+            f_bias = tf.compat.v1.get_variable('f_bias', [ivec], tf.float32, tf.constant_initializer(0.))
             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # batch_size, code_len, vec_size
             dependent_etd = tf.expand_dims(dependent, 1)  # batch_size, code_len,code_len, vec_size
             head = linear(rep_map_dp, ivec, False, scope='linear_head')  # batch_size, code_len, vec_size
@@ -532,8 +538,8 @@ def visit_sa_with_dense(rep_tensor, keep_prob=1.,is_train=None, wd=0.,
 
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
-        with tf.variable_scope('output'):
-            o_bias = tf.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
@@ -548,7 +554,7 @@ def visit_multi_dimensional_attention(rep_tensor, keep_prob=1., is_train=None, w
     # bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape()[2]
 
-    with tf.variable_scope('multi_dimensional_attention'):
+    with tf.compat.v1.variable_scope('multi_dimensional_attention'):
         map1 = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map1', activation,
                               False, wd, keep_prob, is_train)
         map2 = bn_dense_layer(map1, ivec, True, 0., 'bn_dense_map2', 'linear',
@@ -563,7 +569,7 @@ def visit_multi_dimensional_attention(rep_tensor, keep_prob=1., is_train=None, w
 def first_level_sa(rep_tensor, rep_mask, keep_prob=1., is_train=None, wd=0., activation='relu'):
     # bs, sw, cl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2], tf.shape(rep_tensor)[3]
     ivec = rep_tensor.get_shape()[3]
-    with tf.variable_scope('first_level_sa'):
+    with tf.compat.v1.variable_scope('first_level_sa'):
         print('original: ',rep_tensor.get_shape())
         map1 = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map1', activation,False, wd, keep_prob, is_train)
         print('map1: ',map1.get_shape())

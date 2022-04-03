@@ -14,7 +14,7 @@ def cnn_for_context_fusion(
     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
 
-    with tf.variable_scope(scope or 'cnn_for_sentence_encoding'):
+    with tf.compat.v1.variable_scope(scope or 'cnn_for_sentence_encoding'):
         rep_tensor = mask_for_high_rank(rep_tensor, rep_mask)
         rep_tensor_expand = tf.expand_dims(rep_tensor, 3)  # bs, sl,
         rep_tensor_expand_dp = dropout(rep_tensor_expand, keep_prob, is_train)
@@ -22,11 +22,11 @@ def cnn_for_context_fusion(
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
-            with tf.variable_scope("conv-maxpool-%s" % filter_size):
+            with tf.compat.v1.variable_scope("conv-maxpool-%s" % filter_size):
                 # Convolution Layer
                 filter_shape = [filter_size, ivec, 1, num_filters]
-                W = tf.get_variable('W', filter_shape, tf.float32)
-                b = tf.get_variable('b', [num_filters], tf.float32)
+                W = tf.compat.v1.get_variable('W', filter_shape, tf.float32)
+                b = tf.compat.v1.get_variable('b', [num_filters], tf.float32)
 
                 # # pading in the sequence
                 if filter_size % 2 == 1:
@@ -75,7 +75,7 @@ def cnn_for_sentence_encoding( # kim
     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
 
-    with tf.variable_scope(scope or 'cnn_for_sentence_encoding'):
+    with tf.compat.v1.variable_scope(scope or 'cnn_for_sentence_encoding'):
         rep_tensor = mask_for_high_rank(rep_tensor, rep_mask)
         rep_tensor_expand = tf.expand_dims(rep_tensor, 3)
         rep_tensor_expand_dp = dropout(rep_tensor_expand, keep_prob, is_train)
@@ -83,11 +83,11 @@ def cnn_for_sentence_encoding( # kim
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
-            with tf.variable_scope("conv-maxpool-%s" % filter_size):
+            with tf.compat.v1.variable_scope("conv-maxpool-%s" % filter_size):
                 # Convolution Layer
                 filter_shape = [filter_size, ivec, 1, num_filters]
-                W = tf.get_variable('W', filter_shape, tf.float32)
-                b = tf.get_variable('b', [num_filters], tf.float32)
+                W = tf.compat.v1.get_variable('W', filter_shape, tf.float32)
+                b = tf.compat.v1.get_variable('b', [num_filters], tf.float32)
 
                 conv = tf.nn.conv2d(
                     rep_tensor_expand_dp,
@@ -135,22 +135,22 @@ def hierarchical_cnn_res_gate(
     org_ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or org_ivec
 
-    with tf.variable_scope(scope or 'cnn_for_sentence_encoding'):
+    with tf.compat.v1.variable_scope(scope or 'cnn_for_sentence_encoding'):
         rep_tensor = mask_for_high_rank(rep_tensor, rep_mask)  # bs, sl, hn
 
         iter_rep = rep_tensor
         layer_res_list = []
 
         for layer_idx in range(layer_num):
-            with tf.variable_scope("conv_maxpool_%s" % layer_idx):
+            with tf.compat.v1.variable_scope("conv_maxpool_%s" % layer_idx):
 
                 iter_rep_etd = tf.expand_dims(iter_rep, 3)  # bs,sl,hn,1
                 iter_rep_etd_dp = dropout(iter_rep_etd, keep_prob, is_train)
                 # Convolution Layer
                 feature_size = org_ivec if layer_idx == 0 else ivec
                 filter_shape = [n_gram, feature_size, 1, 2 * ivec]
-                W = tf.get_variable('W', filter_shape, tf.float32)
-                b = tf.get_variable('b', [2 * ivec], tf.float32)
+                W = tf.compat.v1.get_variable('W', filter_shape, tf.float32)
+                b = tf.compat.v1.get_variable('b', [2 * ivec], tf.float32)
                 iter_rep_etd_pad = tf.pad(iter_rep_etd_dp, padding)
                 conv = tf.nn.conv2d(
                     iter_rep_etd_pad,
