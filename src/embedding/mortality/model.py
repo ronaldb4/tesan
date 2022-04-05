@@ -40,12 +40,12 @@ class MortalityModel(ModelTemplate):
                                     is_train=True)
 
             losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=tf.cast(self.labels, tf.float32))
-            tf.add_to_collection('losses', tf.reduce_mean(losses, name='loss_mean'))
-            loss = tf.add_n(tf.get_collection('losses', self.scope), name='loss')
-            tf.summary.scalar(loss.op.name, loss)
-            tf.add_to_collection('ema/scalar', loss)
+            tf.compat.v1.add_to_collection('losses', tf.reduce_mean(losses, name='loss_mean'))
+            loss = tf.add_n(tf.compat.v1.get_collection('losses', self.scope), name='loss')
+            tf.compat.v1.summary.scalar(loss.op.name, loss)
+            tf.compat.v1.add_to_collection('ema/scalar', loss)
 
-            optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(loss)
+            optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=0.0001).minimize(loss)
 
             with tf.name_scope('correct_prediction'):
                 correct_prediction = tf.equal(tf.round(logits), tf.cast(self.labels, tf.float32))
@@ -80,47 +80,83 @@ class MortalityModel(ModelTemplate):
                                         'bn_dense_map_linear', 'linear',
                                         False, wd=0., keep_prob=1.,
                                         is_train=True)
+
+            ##############################################################################
+            # TeSAN - proposed model
+            ##############################################################################
             elif self.model_type == 'tesa':
                 init_code_embed = tesan_trans(self.model_type)
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # Interval - Ablation Studies
+            ##############################################################################
             elif self.model_type == 'delta':
                 init_code_embed = tesan_trans(self.model_type)
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
+            ##############################################################################
             elif self.model_type == 'sa':
                 init_code_embed = tesan_trans(self.model_type)
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # Normal_Sa - Ablation Studies
+            ##############################################################################
             elif self.model_type == 'normal':
                 init_code_embed = tesan_trans(self.model_type)
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # CBOW - Baseline Method
+            ##############################################################################
             elif self.model_type == 'cbow':
                 init_code_embed = tesan_trans(self.model_type)
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # Skip-gram - Baseline Method
+            ##############################################################################
             elif self.model_type == 'sg':
                 init_code_embed = tesan_trans(self.model_type)
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # MCE - Baseline Method  (CBOW variant)
+            ##############################################################################
             elif self.model_type == 'mce':
                 init_code_embed = mce_trans()
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+
+            ##############################################################################
+            # GloVe - Baseline Method
+            ##############################################################################
             elif self.model_type == 'glove':
                 init_code_embed = glove_trans()
                 # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
                 inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
             else:
+
+            ##############################################################################
+            # med2vec - Baseline Method
+            ##############################################################################
                 init_code_embed = med2vec_trans()
                 # code_embeddings = tf.constant(init_code_embed, dtype=tf.float32)
                 code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)

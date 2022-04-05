@@ -6,7 +6,7 @@ class GraphHandler(object):
     def __init__(self, model, logging):
         self.model = model
         self.logging = logging
-        self.saver = tf.train.Saver(max_to_keep=3)
+        self.saver = tf.compat.v1.train.Saver(max_to_keep=3)
         self.writer = None
 
     def initialize(self, sess):
@@ -15,7 +15,7 @@ class GraphHandler(object):
         if cfg.load_model: #or cfg.mode != 'train_dann':
             self.restore(sess)
         if cfg.mode == 'train':
-            self.writer = tf.summary.FileWriter(logdir=cfg.summary_dir, graph=tf.get_default_graph())
+            self.writer = tf.compat.v1.summary.FileWriter(logdir=cfg.summary_dir, graph=tf.get_default_graph())
 
     def add_summary(self, summary, global_step):
         self.logging.add()

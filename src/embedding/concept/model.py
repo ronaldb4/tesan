@@ -87,12 +87,12 @@ class ConceptModel(ModelTemplate):
             num_classes=self.vocabulary_size)
 
         # loss = tf.reduce_mean(losses, name='loss_mean')
-        tf.add_to_collection('losses', tf.reduce_mean(losses, name='loss_mean'))
-        loss = tf.add_n(tf.get_collection('losses', self.scope), name='loss')
-        tf.summary.scalar(loss.op.name, loss)
-        tf.add_to_collection('ema/scalar', loss)
+        tf.compat.v1.add_to_collection('losses', tf.reduce_mean(losses, name='loss_mean'))
+        loss = tf.add_n(tf.compat.v1.get_collection('losses', self.scope), name='loss')
+        tf.compat.v1.summary.scalar(loss.op.name, loss)
+        tf.compat.v1.add_to_collection('ema/scalar', loss)
 
-        optimizer = tf.train.AdamOptimizer().minimize(loss)
+        optimizer = tf.compat.v1.train.AdamOptimizer().minimize(loss)
         return loss, optimizer, nce_weights
 
     def build_accuracy(self):
@@ -105,7 +105,10 @@ class ConceptModel(ModelTemplate):
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
-        if self.model_type == 'tesa':
+        ##############################################################################
+        # TeSAN - proposed model
+        ##############################################################################
+        if self.model_type == 'tesa': #TeSAN - the proposed
             with tf.name_scope(self.model_type):
                 # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]
                 init_date_embed = tf.random_uniform([self.dates_size, self.embedding_size], -1.0, 1.0)
@@ -135,6 +138,10 @@ class ConceptModel(ModelTemplate):
                 # Attention pooling
                 context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
 
+
+        ##############################################################################
+        # Interval - Ablation Studies
+        ##############################################################################
         elif self.model_type == 'delta':
             with tf.name_scope(self.model_type):
                 #self_attention
@@ -151,6 +158,10 @@ class ConceptModel(ModelTemplate):
                 # attention pooling
                 context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
 
+
+        ##############################################################################
+        # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
+        ##############################################################################
         elif self.model_type == 'sa':
             with tf.name_scope(self.model_type):
                 #self_attention
@@ -163,6 +174,10 @@ class ConceptModel(ModelTemplate):
                 # attention pooling
                 context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
 
+
+        ##############################################################################
+        # Normal_Sa - Ablation Studies
+        ##############################################################################
         elif self.model_type == 'normal':
             with tf.name_scope(self.model_type):
                 #self_attention
@@ -174,14 +189,26 @@ class ConceptModel(ModelTemplate):
                 # attention pooling
                 context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
 
+
+        ##############################################################################
+        # CBOW - Baseline Method
+        ##############################################################################
         elif self.model_type == 'cbow':
             with tf.name_scope(self.model_type):
                 cntxt_embed = mask_for_high_rank(context_embed, self.context_mask)# bs,sl,vec
                 context_fusion = tf.reduce_mean(cntxt_embed, 1)
 
+
+        ##############################################################################
+        # ?????????????
+        ##############################################################################
         elif self.model_type == 'ta_attn':
             context_fusion = time_aware_attention(self.train_inputs,context_embed,self.context_mask,self.embedding_size,k=100)
 
+
+        ##############################################################################
+        # ?????????????
+        ##############################################################################
         elif self.model_type == 'fusion':
             with tf.name_scope(self.model_type):
                 # self-attention

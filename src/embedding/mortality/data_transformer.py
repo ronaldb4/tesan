@@ -9,28 +9,18 @@ root_dir = os.path.dirname(root_dir)
 root_dir = os.path.dirname(root_dir)
 root_dir = os.path.dirname(root_dir)
 
-tesa_dict_file = join(root_dir, 'dataset/baselines/TeSAN/mimic3/mimic3_dict.json')
+embeddings_basedir = 'outputs/tasks/embedding/'
+
+#tesa_dict_file = join(root_dir, 'dataset/baselines/TeSAN/mimic3/mimic3_dict.json')
+tesa_dict_file = join(root_dir, 'dataset/processed/mimic3_dict.json')
 with open(tesa_dict_file, 'r', encoding='utf-8') as f:
     tesa_dict = json.load(f)
-
-glove_vectors_file = join(root_dir, 'dataset/baselines/GloVe/mimic3/mimic3_vectors_6.txt')
-
-med2vec_vectors_file = join(root_dir, 'dataset/baselines/med2vec/mimic3/outputs_med2vec.9.npz')
-med2vec_origin_dict_file = join(root_dir, 'dataset/baselines/med2vec/mimic3/outputs.types')
-
-mce_vectors_file = join(root_dir, 'dataset/baselines/MCE/mimic3/mimic3-attn1-e10-ne10-w6-aw20_month.vec')
-mce_origin_dict_file = join(root_dir, 'dataset/baselines/MCE/mimic3/mmimic3_volcabs.csv')
-
-cbow_file = join(root_dir, 'dataset/baselines/CBOW/mimic3/cbow_sk_6_epoch_10.vect')
-sg_file = join(root_dir, 'dataset/baselines/SG/mimic3/sg_sk_6_epoch_10.vect')
-tesa_file = join(root_dir, 'dataset/baselines/TeSAN/mimic3/mimic3_model_tesa_epoch_30_sk_6.vect')
-sa_file = join(root_dir, 'outputs/tasks/embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect')
-normal_file = join(root_dir, 'outputs/tasks/embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect')
-delta_file = join(root_dir, 'outputs/tasks/embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect')
 
 
 def glove_trans():
     coed_weights = dict()
+    glove_vectors_file = join(root_dir, 'dataset/baselines/GloVe/mimic3/mimic3_vectors_6.txt')
+
     with open(glove_vectors_file, 'r') as read_file:
         for line in read_file:
             line2list = line.split()
@@ -49,6 +39,9 @@ def glove_trans():
 
 
 def med2vec_trans():
+    med2vec_vectors_file = join(root_dir, 'dataset/baselines/med2vec/mimic3/outputs_med2vec.9.npz')
+    med2vec_origin_dict_file = join(root_dir, 'dataset/baselines/med2vec/mimic3/outputs.types')
+
     origin_weights = np.load(med2vec_vectors_file)
     origin_weights = origin_weights['W_emb']
     embedding_size = origin_weights.shape[1]
@@ -73,6 +66,9 @@ def med2vec_trans():
 
 
 def mce_trans():
+    mce_vectors_file = join(root_dir, 'dataset/baselines/MCE/mimic3/mimic3-attn1-e10-ne10-w6-aw20_month.vec')
+    mce_origin_dict_file = join(root_dir, 'dataset/baselines/MCE/mimic3/mmimic3_volcabs.csv')
+
     coed_weights = dict()
     volcabs = pd.read_csv(mce_origin_dict_file, header=0).vols.tolist()
     with open(mce_vectors_file) as f:
@@ -100,6 +96,9 @@ def mce_trans():
 
 def tesan_trans(model_type = 'tesa'):
     if model_type == 'cbow':
+        # cbow_file   = join(root_dir, 'dataset/baselines/CBOW/mimic3/cbow_sk_6_epoch_10.vect')
+        cbow_file = join(root_dir, embeddings_basedir, 'cbow/vects/mimic3_model_cbow_epoch_10_sk_6.vect')
+
         origin_weights = np.loadtxt(cbow_file, delimiter=",")
         weights = []
         embedding_size = origin_weights.shape[1]
@@ -111,6 +110,8 @@ def tesan_trans(model_type = 'tesa'):
         print(weights.shape,model_type)
         return weights
     elif model_type == 'sg':
+        sg_file = join(root_dir, 'dataset/baselines/SG/mimic3/sg_sk_6_epoch_10.vect')
+
         origin_weights = np.loadtxt(sg_file, delimiter=",")
         weights = []
         embedding_size = origin_weights.shape[1]
@@ -122,18 +123,26 @@ def tesan_trans(model_type = 'tesa'):
         print(weights.shape,model_type)
         return weights
     elif model_type == 'tesa':
+        # tesa_file   = join(root_dir, 'dataset/baselines/TeSAN/mimic3/mimic3_model_tesa_epoch_30_sk_6.vect')
+        tesa_file = join(root_dir, embeddings_basedir, 'tesa/vects/mimic3_model_tesa_epoch_30_sk_6.vect')
+
         origin_weights = np.loadtxt(tesa_file, delimiter=",")
         print(origin_weights.shape, model_type)
         return origin_weights
     elif model_type == 'sa':
+        sa_file = join(root_dir, embeddings_basedir, 'sa/vects/mimic3_model_sa_epoch_30_sk_6.vect')
         origin_weights = np.loadtxt(sa_file, delimiter=",")
         print(origin_weights.shape, model_type)
         return origin_weights
     elif model_type == 'delta':
+        delta_file = join(root_dir, embeddings_basedir, 'delta/vects/mimic3_model_delta_epoch_30_sk_6.vect')
+
         origin_weights = np.loadtxt(delta_file, delimiter=",")
         print(origin_weights.shape, model_type)
         return origin_weights
     elif model_type == 'normal':
+        normal_file = join(root_dir, embeddings_basedir, 'normal/vects/mimic3_model_normal_epoch_30_sk_6.vect')
+
         origin_weights = np.loadtxt(normal_file, delimiter=",")
         print(origin_weights.shape, model_type)
         return origin_weights

@@ -102,20 +102,20 @@ def reconstruct(tensor, ref, keep, dim_reduced_keep=None):
 
 def add_wd(wd, scope=None):
     scope = scope or tf.compat.v1.get_variable_scope().name
-    variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
+    variables = tf.compat.v1.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
     counter = 0
     with tf.name_scope("weight_decay"):
         for var in variables:
             counter+=1
             weight_decay = tf.multiply(tf.nn.l2_loss(var), wd,
                                        name="{}-wd".format('-'.join(str(var.op.name).split('/'))))
-            tf.add_to_collection('losses', weight_decay)
+            tf.compat.v1.add_to_collection('losses', weight_decay)
         return counter
 
 
 def add_wd_without_bias(wd, scope=None):
     scope = scope or tf.compat.v1.get_variable_scope().name
-    variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
+    variables = tf.compat.v1.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
     counter = 0
     with tf.name_scope("weight_decay"):
         for var in variables:
@@ -123,30 +123,30 @@ def add_wd_without_bias(wd, scope=None):
             counter += 1
             weight_decay = tf.multiply(tf.nn.l2_loss(var), wd,
                                        name="{}-wd".format('-'.join(str(var.op.name).split('/'))))
-            tf.add_to_collection('losses', weight_decay)
+            tf.compat.v1.add_to_collection('losses', weight_decay)
         return counter
 
 
 def add_reg_without_bias(scope=None):
     scope = scope or tf.compat.v1.get_variable_scope().name
-    variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
+    variables = tf.compat.v1.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
     counter = 0
     for var in variables:
         if len(var.get_shape().as_list()) <= 1: continue
-        tf.add_to_collection('reg_vars', var)
+        tf.compat.v1.add_to_collection('reg_vars', var)
         counter += 1
     return counter
 
 
 def add_var_reg(var):
-    tf.add_to_collection('reg_vars', var)
+    tf.compat.v1.add_to_collection('reg_vars', var)
 
 
 def add_wd_for_var(var, wd):
     with tf.name_scope("weight_decay"):
         weight_decay = tf.multiply(tf.nn.l2_loss(var), wd,
                                    name="{}-wd".format('-'.join(str(var.op.name).split('/'))))
-        tf.add_to_collection('losses', weight_decay)
+        tf.compat.v1.add_to_collection('losses', weight_decay)
 
 
 
