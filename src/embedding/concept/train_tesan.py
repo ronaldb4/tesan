@@ -15,20 +15,6 @@ warnings.filterwarnings('ignore')
 
 logging = RecordLog()
 
-# def train_all(cfg):
-#     all = [
-#     'delta', # done
-#     'sa',
-#     'normal',
-#     'cbow',
-#     'ta_attn',
-#     'fusion',
-#     'tesa']
-#     for currModel in all:
-#         logging.info('training ',currModel)
-#         cfg.model = currModel
-#         train()
-
 def train():
 
     if cfg.gpu_mem is None:
