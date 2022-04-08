@@ -2,7 +2,7 @@ import tensorflow as tf
 import math
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
-from src.__refactored__.concept_embedding.models._base_model_ import ModelTemplate
+from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
 
 
 ##############################################################################
