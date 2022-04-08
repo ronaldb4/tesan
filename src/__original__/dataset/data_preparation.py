@@ -138,99 +138,6 @@ def processing_mimic3(file_adm, file_dxx, file_txx, file_drug, file_drg, output_
 
     return patients
 
-def processing_mimic4(file_adm, file_dxx, file_txx, file_drug, file_drg, output_file):
-    print('loading mimic4 files ...')
-
-    m_adm = pd.read_csv(file_adm, dtype={'hospital_expire_flag': object})   # ADMISSIONS.csv
-    m_dxx = pd.read_csv(file_dxx, dtype={'icd_version': object})              # DIAGNOSES_ICD.csv
-    m_txx = pd.read_csv(file_txx, dtype={'icd_version': object})              # PROCEDURES_ICD.csv
-    m_drg = pd.read_csv(file_drg, dtype={'drg_code': object})               # PRESCRIPTIONS.csv
-    m_drug = pd.read_csv(file_drug, dtype={'ndc': object})                  # DRGCODES.csv
-
-
-    # get total unique patients
-    unique_pats = m_dxx.subject_id.unique()
-    print('processing mimic4 files for {} patients ...'.format(unique_pats))
-
-    patients = []  # store all preprocessed patients' data
-    for sub_id in unique_pats:
-        patient = dict()
-        patient['pid'] = str(sub_id)
-        pat_dxx = m_dxx[m_dxx.subject_id == sub_id]  # get a specific patient's all data in dxx file
-        uni_hadm = pat_dxx.hadm_id.unique()  # get all unique admissions
-        grouped = pat_dxx.groupby(['hadm_id'])
-        visits = []
-        patient_has_icd9 = False
-        for hadm in uni_hadm:
-            act = dict()
-            adm = m_adm[(m_adm.subject_id == sub_id) & (m_adm.hadm_id == hadm)]
-            admsn_dt = datetime.datetime.strptime(adm.admittime.values[0], "%Y-%m-%d %H:%M:%S")
-            disch_dt = datetime.datetime.strptime(adm.dischtime.values[0], "%Y-%m-%d %H:%M:%S")
-            death_flag = adm.hospital_expire_flag.values[0]
-
-            delta = disch_dt - admsn_dt
-            act['admsn_dt'] = admsn_dt.strftime("%Y%m%d")
-            act['day_cnt'] = str(delta.days + 1)
-
-            codes = grouped.get_group(hadm)  # get all diagnosis codes in the adm
-            DXs = []
-            hadm_all_icd9 = True
-            for index, row in codes.iterrows():
-# add check here for icd_version==9
-# or add alignment on icd_version
-# or concat icd_version and icd_code
-                version = row['icd_version']
-                if version == '9':
-                    patient_has_icd9 = True
-                    dx = row['icd_code']
-                    if dx == dx:    # if is not NaN
-                        DXs.append(dx)
-                else :
-                    hadm_all_icd9 = False
-
-            if hadm_all_icd9 is False:
-                break
-
-            TXs = []
-            pat_txx = m_txx[(m_txx.subject_id == sub_id) & (m_txx.hadm_id == hadm)]
-            tx_codes = pat_txx.icd_code.values  # get all procedure codes in the adm
-            for code in tx_codes:
-                if code == code:   # if is not NaN
-                    TXs.append(code)
-
-            drugs = []
-            pat_drugs = m_drug[(m_drug.subject_id == sub_id) & (m_drug.hadm_id == hadm)]
-            drug_codes = pat_drugs.ndc.values  # get all drug codes in the adm
-            for code in drug_codes:
-                if code == code and code != '0':   # if is not NaN and not 0
-                    drugs.append(code)
-
-            drgs = []
-            pat_drgs = m_drg[(m_drg.subject_id == sub_id) & (m_drg.hadm_id == hadm)]
-            drg_codes = pat_drgs.drg_code.values  # get all drug codes in the adm
-            for code in drg_codes:
-                if code == code:   # if is not NaN
-                    drgs.append(code)
-
-            act['DXs'] = DXs
-            act['CPTs'] = TXs
-            act['DRGs'] = drgs
-            act['Drugs'] = drugs
-            act['Death'] = death_flag
-            visits.append(act)
-
-        if patient_has_icd9 is True:
-            print('patient {} is processed!'.format(sub_id))
-            patient['visits'] = visits
-            patients.append(patient)
-        else :
-            print('patient {} is ICD10 only!'.format(sub_id))
-
-    with open(output_file, 'w') as outfile:
-        json.dump(patients, outfile)
-
-    return patients
-
 
 if __name__ == "__main__":
     print(os.getcwd())
@@ -248,16 +155,6 @@ if __name__ == "__main__":
         processing_mimic3(file_adm, file_dxx, file_txx, file_drug, file_drg, output_file)
 
     else:
-        file_adm = '../../../dataset/mimic4/admissions.csv'
-        file_dxx = '../../../dataset/mimic4/diagnoses_icd.csv'
-        file_txx = '../../../dataset/mimic4/procedures_icd.csv'
-        file_drug = '../../../dataset/mimic4/prescriptions.csv'
-        file_drg = '../../../dataset/mimic4/drgcodes.csv'
-
-        output_file = '../../../dataset/processed/patients_mimic4_full.json'
-
-        processing_mimic4(file_adm, file_dxx, file_txx, file_drug, file_drg, output_file)
-
-        # files_path = '../../dataset/cms'
-        # output_file = '../../dataset/processed/patients_cms_full.json'
-        # processing_cms(files_path, output_file)
+        files_path = '../../dataset/cms'
+        output_file = '../../dataset/processed/patients_cms_full.json'
+        processing_cms(files_path, output_file)
