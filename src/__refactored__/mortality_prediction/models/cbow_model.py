@@ -9,10 +9,9 @@ from src.__refactored__.mortality_prediction.models.__template_model__ import Mo
 from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
 
 
-class MortalityModel(ModelTemplate):
+class CBOWModel(ModelTemplate):
     def __init__(self,scope, dataset):
-
-        super(MortalityModel, self).__init__(scope, dataset)
+        super(CBOWModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit

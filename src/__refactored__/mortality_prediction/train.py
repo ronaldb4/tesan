@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 from os.path import join
 
-from src.__refactored__.concept_embedding.models.cbow_model import CBOWModel
+from src.__refactored__.mortality_prediction.models.cbow_model import CBOWModel
 from src.__refactored__.mortality_prediction.models.glove_model import GloveModel
 from src.__refactored__.mortality_prediction.models.mce_model import MCEModel
 from src.__refactored__.mortality_prediction.models.med2vec_model import Med2VecModel
