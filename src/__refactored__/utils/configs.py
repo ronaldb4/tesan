@@ -41,7 +41,11 @@ class Configs(object):
         parser.add_argument('--task', type=str, default='prediction', help='embedding or prediction')
 
         # @ ------------------RNN------------------
-        parser.add_argument('--cell_type', type=str, default='gru', help='cell unit')
+        # ############################################################
+        # pg 505: All models were trained with 50,00 steps;
+        # the batch size is 128 and the RNN cell type is GRU.
+        # ############################################################
+        # parser.add_argument('--cell_type', type=str, default='gru', help='cell unit')
         parser.add_argument('--hn', type=int, default=100, help='number of hidden units')
         parser.add_argument('--time_steps', type=int, default=174, help='length of sequence')
         parser.add_argument('--num_per_step', type=int, default=200, help='number of per step')

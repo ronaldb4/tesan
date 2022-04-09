@@ -1,20 +1,17 @@
 import tensorflow as tf
-import json
 import numpy as np
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model._dynamic_rnn_ import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
 from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
 from src.__refactored__.mortality_prediction.data.datafile_util import fullpath, tesa_dict
 
 
-class Med2VecModel(ModelTemplate):
-
+class GloveModel(ModelTemplate):
     def __init__(self,scope, dataset):
-
-        super(Med2VecModel, self).__init__(scope, dataset)
+        super(GloveModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -73,35 +70,27 @@ class Med2VecModel(ModelTemplate):
         return relevant
 
     def build_network(self):
-
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # med2vec - Baseline Method
+            # GloVe - Baseline Method
             ##############################################################################
-            med2vec_vectors_file = fullpath('dataset/baselines/med2vec/mimic3/outputs_med2vec.9.npz')
-            med2vec_origin_dict_file = fullpath('dataset/baselines/med2vec/mimic3/outputs.types')
+            coed_weights = dict()
+            glove_vectors_file = fullpath('dataset/baselines/GloVe/mimic3/mimic3_vectors_6.txt')
 
-            origin_weights = np.load(med2vec_vectors_file)
-            origin_weights = origin_weights['W_emb']
-            embedding_size = origin_weights.shape[1]
-            padding_array = np.zeros(embedding_size)
-            with open(med2vec_origin_dict_file) as read_file:
-                origin_dict = json.load(read_file)
-            new_dict = {}
-            for k in origin_dict.keys():
-                key = k.replace('.', '')
-                new_dict[key] = origin_dict[k]
+            with open(glove_vectors_file, 'r') as read_file:
+                for line in read_file:
+                    line2list = line.split()
+                    code = line2list[0]
+                    weight = line2list[1:]
+                    coed_weights[code] = weight
             weights = []
-            padding_count = 0
             for k, v in tesa_dict().items():
-                if v not in new_dict.keys():
-                    weights.append(padding_array)
-                    padding_count += 1
+                if v not in coed_weights.keys():
+                    weights.append(coed_weights['<unk>'])
                 else:
-                    weights.append(origin_weights[new_dict[v]])
+                    weights.append(coed_weights[v])
             weights = np.array(weights, dtype=float)
-            print(weights.shape, padding_count)
-
+            print(weights.shape, 'glove')
             code_embeddings = tf.Variable(weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
 
@@ -117,14 +106,19 @@ class Med2VecModel(ModelTemplate):
 
         with tf.name_scope('RNN_computaion'):
             reuse = None if not tf.compat.v1.get_variable_scope().reuse else True
-            if cfg.cell_type == 'gru':
-                cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
-            elif cfg.cell_type == 'lstm':
-                cell = tf.contrib.rnn.LSTMCell(cfg.hn, reuse=reuse)
-            elif cfg.cell_type == 'basic_lstm':
-                cell = tf.contrib.rnn.BasicLSTMCell(cfg.hn, reuse=reuse)
-            elif cfg.cell_type == 'basic_rnn':
-                cell = tf.contrib.rnn.BasicRNNCell(cfg.hn, reuse=reuse)
+            # ############################################################
+            # pg 505: All models were trained with 50,00 steps;
+            # the batch size is 128 and the RNN cell type is GRU.
+            # ############################################################
+            cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
+            # if cfg.cell_type == 'gru':
+            #     cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
+            # elif cfg.cell_type == 'lstm':
+            #     cell = tf.contrib.rnn.LSTMCell(cfg.hn, reuse=reuse)
+            # elif cfg.cell_type == 'basic_lstm':
+            #     cell = tf.contrib.rnn.BasicLSTMCell(cfg.hn, reuse=reuse)
+            # elif cfg.cell_type == 'basic_rnn':
+            #     cell = tf.contrib.rnn.BasicRNNCell(cfg.hn, reuse=reuse)
 
             outputs, final_state = dynamic_rnn(cell, inputs_reduced, tensor_len, dtype=tf.float32)
         return outputs, final_state, tensor_len

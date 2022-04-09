@@ -3,15 +3,15 @@ import numpy as np
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model._dynamic_rnn_ import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
 from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
 from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
 
 
-class SGModel(ModelTemplate):
+class DeltaModel(ModelTemplate):
     def __init__(self,scope, dataset):
-        super(SGModel, self).__init__(scope, dataset)
+        super(DeltaModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -72,20 +72,13 @@ class SGModel(ModelTemplate):
     def build_network(self):
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # Skip-gram - Baseline Method
+            # Interval - Ablation Studies
             ##############################################################################
-            sg_file = fullpath('dataset/baselines/SG/mimic3/sg_sk_6_epoch_10.vect')
+            delta_file = fullpath('outputs/__refactored__/concept_embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect')
 
-            origin_weights = np.loadtxt(sg_file, delimiter=",")
-            weights = []
-            embedding_size = origin_weights.shape[1]
-            padding_array = np.zeros(embedding_size)
-            weights.append(padding_array)
-            for i in range(origin_weights.shape[0]):
-                weights.append(origin_weights[i])
-            weights = np.array(weights, dtype=float)
-
-            code_embeddings = tf.Variable(weights, dtype=tf.float32)
+            origin_weights = np.loadtxt(delta_file, delimiter=",")
+            print(origin_weights.shape, 'delta')
+            code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
 
         with tf.name_scope('visit_embedding'):
@@ -100,14 +93,19 @@ class SGModel(ModelTemplate):
 
         with tf.name_scope('RNN_computaion'):
             reuse = None if not tf.compat.v1.get_variable_scope().reuse else True
-            if cfg.cell_type == 'gru':
-                cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
-            elif cfg.cell_type == 'lstm':
-                cell = tf.contrib.rnn.LSTMCell(cfg.hn, reuse=reuse)
-            elif cfg.cell_type == 'basic_lstm':
-                cell = tf.contrib.rnn.BasicLSTMCell(cfg.hn, reuse=reuse)
-            elif cfg.cell_type == 'basic_rnn':
-                cell = tf.contrib.rnn.BasicRNNCell(cfg.hn, reuse=reuse)
+            # ############################################################
+            # pg 505: All models were trained with 50,00 steps;
+            # the batch size is 128 and the RNN cell type is GRU.
+            # ############################################################
+            cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
+            # if cfg.cell_type == 'gru':
+            #     cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
+            # elif cfg.cell_type == 'lstm':
+            #     cell = tf.contrib.rnn.LSTMCell(cfg.hn, reuse=reuse)
+            # elif cfg.cell_type == 'basic_lstm':
+            #     cell = tf.contrib.rnn.BasicLSTMCell(cfg.hn, reuse=reuse)
+            # elif cfg.cell_type == 'basic_rnn':
+            #     cell = tf.contrib.rnn.BasicRNNCell(cfg.hn, reuse=reuse)
 
             outputs, final_state = dynamic_rnn(cell, inputs_reduced, tensor_len, dtype=tf.float32)
         return outputs, final_state, tensor_len

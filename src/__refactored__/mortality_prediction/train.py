@@ -2,16 +2,16 @@ import tensorflow as tf
 import numpy as np
 from os.path import join
 
-from src.__refactored__.mortality_prediction.model.cbow import CBOWModel
-from src.__refactored__.mortality_prediction.model.glove import GloveModel
-from src.__refactored__.mortality_prediction.model.mce import MCEModel
-from src.__refactored__.mortality_prediction.model.med2vec import Med2VecModel
-from src.__refactored__.mortality_prediction.model.sg import SGModel
-from src.__refactored__.mortality_prediction.model.raw import RawModel
-from src.__refactored__.mortality_prediction.model.tesa import TesaModel
-from src.__refactored__.mortality_prediction.model.delta import DeltaModel
-from src.__refactored__.mortality_prediction.model.sa import SAModel
-from src.__refactored__.mortality_prediction.model.normal import NormalModel
+from src.__refactored__.mortality_prediction.model.baseline.cbow import CBOWModel
+from src.__refactored__.mortality_prediction.model.baseline.glove import GloveModel
+from src.__refactored__.mortality_prediction.model.baseline.mce import MCEModel
+from src.__refactored__.mortality_prediction.model.baseline.med2vec import Med2VecModel
+from src.__refactored__.mortality_prediction.model.baseline.sg import SGModel
+from src.__refactored__.mortality_prediction.model.baseline.raw import RawModel
+from src.__refactored__.mortality_prediction.model.ablation.tesa import TesaModel
+from src.__refactored__.mortality_prediction.model.ablation.delta import DeltaModel
+from src.__refactored__.mortality_prediction.model.ablation.sa import SAModel
+from src.__refactored__.mortality_prediction.model.ablation.normal import NormalModel
 from src.__refactored__.utils.configs import cfg
 
 from src.__refactored__.utils.graph_handler import GraphHandler

@@ -2,14 +2,14 @@ import tensorflow as tf
 import numpy as np
 from os.path import join
 
-from src.__refactored__.concept_embedding.model.cbow import CBOWModel
-from src.__refactored__.concept_embedding.model.delta import DeltaModel
+from src.__refactored__.concept_embedding.model.baseline.cbow import CBOWModel
+from src.__refactored__.concept_embedding.model.ablation.delta import DeltaModel
 from src.__refactored__.concept_embedding.model.fusion import FusionModel
-from src.__refactored__.concept_embedding.model.normal import NormalModel
-from src.__refactored__.concept_embedding.model.sa import SAModel
-from src.__refactored__.concept_embedding.model.ta_attn import TaAttnModel
-from src.__refactored__.concept_embedding.model.tesa import TesaNonDateModel
-from src.__refactored__.concept_embedding.model.tesan import TeSANModel
+from src.__refactored__.concept_embedding.model.ablation.normal import NormalModel
+from src.__refactored__.concept_embedding.model.ablation.sa import SAModel
+from src.__refactored__.concept_embedding.model.baseline.ta_attn import TaAttnModel
+from src.__refactored__.concept_embedding.model.ablation.tesa import TesaNonDateModel
+from src.__refactored__.concept_embedding.model.proposed.tesan import TeSANModel
 from src.__refactored__.utils.configs import cfg
 
 from src.__refactored__.utils.graph_handler import GraphHandler
