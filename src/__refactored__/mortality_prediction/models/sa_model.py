@@ -74,7 +74,7 @@ class SAModel(ModelTemplate):
             ##############################################################################
             # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
             ##############################################################################
-            sa_file = fullpath('outputs/tasks/embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect')
+            sa_file = fullpath('outputs/__refactored__/concept_embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect')
             origin_weights = np.loadtxt(sa_file, delimiter=",")
             code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)

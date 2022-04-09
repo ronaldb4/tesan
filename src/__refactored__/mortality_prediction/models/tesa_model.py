@@ -74,7 +74,7 @@ class TesaModel(ModelTemplate):
             ##############################################################################
             # TeSAN - proposed model
             ##############################################################################
-            tesa_file = fullpath('outputs/tasks/embedding/tesa/vects/mimic3_model_tesa_epoch_30_sk_6.vect')
+            tesa_file = fullpath('outputs/__refactored__/concept_embedding/tesa/vects/mimic3_model_tesa_epoch_30_sk_6.vect')
 
             origin_weights = np.loadtxt(tesa_file, delimiter=",")
             code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)

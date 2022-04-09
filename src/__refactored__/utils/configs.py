@@ -19,9 +19,9 @@ class Configs(object):
         self.ccs_file = join(self.project_dir, 'src/__refactored__/utils/ontologies/SingleDX-edit.txt')
 
         self.dataset_dir = join(self.project_dir, 'dataset', 'processed')
-        self.standby_log_dir = self.mkdir(self.project_dir, 'logs')
-        self.result_dir = self.mkdir(self.project_dir, 'outputs')
-        self.all_model_dir = self.mkdir(self.result_dir, 'tasks')
+        self.standby_log_dir = self.mkdir(self.project_dir, 'logs/__refactored__')
+        self.result_dir = self.mkdir(self.project_dir, 'outputs/__refactored__/concept_embedding')
+        self.all_model_dir = self.mkdir(self.result_dir, 'tasks/__refactored__')
 
         # ------parsing input arguments"--------
         parser = argparse.ArgumentParser()

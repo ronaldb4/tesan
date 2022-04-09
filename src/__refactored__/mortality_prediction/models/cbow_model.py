@@ -74,7 +74,7 @@ class CBOWModel(ModelTemplate):
            ##############################################################################
             # CBOW - Baseline Method
             ##############################################################################
-            cbow_file = fullpath('outputs/tasks/embedding/cbow/vects/mimic3_model_cbow_epoch_10_sk_6.vect')
+            cbow_file = fullpath('outputs/__refactored__/concept_embedding/cbow/vects/mimic3_model_cbow_epoch_10_sk_6.vect')
             origin_weights = np.loadtxt(cbow_file, delimiter=",")
 
             weights = []

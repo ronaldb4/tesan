@@ -9,7 +9,7 @@ root_dir = os.path.dirname(root_dir)
 root_dir = os.path.dirname(root_dir)
 root_dir = os.path.dirname(root_dir)
 
-embeddings_basedir = 'outputs/tasks/embedding/'
+embeddings_basedir = 'outputs/__original__/tasks/embedding/'
 
 tesa_dict_file = join(root_dir, 'dataset/baselines/TeSAN/mimic3/mimic3_dict.json')
 with open(tesa_dict_file, 'r', encoding='utf-8') as f:

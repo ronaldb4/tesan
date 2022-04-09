@@ -7,7 +7,7 @@ root_dir = os.path.dirname(root_dir)
 root_dir = os.path.dirname(root_dir)
 root_dir = os.path.dirname(root_dir)
 
-embeddings_basedir = 'outputs/tasks/embedding/'
+embeddings_basedir = 'outputs/__refactored__/concept_embedding/'
 
 
 def tesa_dict():

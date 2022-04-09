@@ -74,7 +74,7 @@ class NormalModel(ModelTemplate):
             ##############################################################################
             # Normal_Sa - Ablation Studies
             ##############################################################################
-            normal_file = fullpath('outputs/tasks/embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect')
+            normal_file = fullpath('outputs/__refactored__/concept_embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect')
 
             origin_weights = np.loadtxt(normal_file, delimiter=",")
             code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
