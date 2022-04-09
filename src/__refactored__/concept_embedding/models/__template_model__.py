@@ -13,7 +13,7 @@ class ModelTemplate(metaclass=ABCMeta):
         #---------------------------------------------------------------------------------------------------------------
 
         #-----------------------------------------------
-        # control
+        # control - these are just for driving the process
         #-----------------------------------------------
         self.model_type = cfg.model                         # default='tesa', help='tesa, vanila_sa, or cbow'
         self.data_src = cfg.data_source                     # default='mimic3', help='mimic3 or cms'

@@ -12,9 +12,10 @@ class Configs(object):
         root_dir, _ = os.path.split(os.path.abspath(__file__))
         root_dir = os.path.dirname(root_dir)
         root_dir = os.path.dirname(root_dir)
+        root_dir = os.path.dirname(root_dir)
         self.project_dir = root_dir
-        self.icd_file = join(self.project_dir, 'src/utils/ontologies/D_ICD_DIAGNOSES.csv')
-        self.ccs_file = join(self.project_dir, 'src/utils/ontologies/SingleDX-edit.txt')
+        self.icd_file = join(self.project_dir, 'src/__original__/utils/ontologies/D_ICD_DIAGNOSES.csv')
+        self.ccs_file = join(self.project_dir, 'src/__original__/utils/ontologies/SingleDX-edit.txt')
 
         self.dataset_dir = join(self.project_dir, 'dataset', 'processed')
         self.standby_log_dir = self.mkdir(self.project_dir, 'logs')
