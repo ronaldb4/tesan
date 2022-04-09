@@ -284,7 +284,7 @@ def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
         return output
 
 ##########################################################################################
-# attention mechanism for TeSAN - the proposed model
+# attention mechanism for TeSA - an ablation variant
 ##########################################################################################
 def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
                                      is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
@@ -346,6 +346,9 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
         return output
 
 
+##########################################################################################
+# attention mechanism for TeSAN - the proposed model
+##########################################################################################
 def temporal_date_sa_with_dense(rep_tensor, rep_mask, date_tensor, keep_prob=1.,
                                       is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
 

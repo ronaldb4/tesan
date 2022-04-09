@@ -2,7 +2,7 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.nn_utils.attention import multi_dimensional_attention, temporal_delta_sa_with_dense, temporal_date_sa_with_dense
+from src.__refactored__.nn_utils.attention import multi_dimensional_attention, temporal_delta_sa_with_dense
 from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
 
 
