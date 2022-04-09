@@ -8,7 +8,8 @@ from src.__refactored__.concept_embedding.models.fusion_model import FusionModel
 from src.__refactored__.concept_embedding.models.normal_model import NormalModel
 from src.__refactored__.concept_embedding.models.sa_model import SAModel
 from src.__refactored__.concept_embedding.models.ta_attn_model import TaAttnModel
-from src.__refactored__.concept_embedding.models.tesa_nondate_model import TesaModel
+from src.__refactored__.concept_embedding.models.tesa_nondate_model import TesaNonDateModel
+from src.__refactored__.concept_embedding.models.tesan_model import TeSANModel
 from src.__refactored__.utils.configs import cfg
 
 from src.__refactored__.utils.graph_handler import GraphHandler
@@ -53,7 +54,10 @@ def train():
     with tf.compat.v1.variable_scope('concept_embedding') as scope:
         #model = Model(scope.name,data_set)
         if cfg.model == 'tesa': #TeSAN - the proposed
-            model = TesaModel(scope.name, data_set)
+            if cfg.is_date_encoding:
+                model = TeSANModel(scope.name, data_set)
+            else:
+                model = TesaNonDateModel(scope.name, data_set)
         elif cfg.model == 'delta':
             model = DeltaModel(scope.name, data_set)
         elif cfg.model == 'sa':
