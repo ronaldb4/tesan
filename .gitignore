@@ -116,5 +116,5 @@ ENV/
 .DS_Store
 .idea/
 
-dataset/*
-outputs/*
+/src/dataset/*
+/src/outputs/*
