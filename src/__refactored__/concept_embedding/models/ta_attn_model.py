@@ -1,13 +1,12 @@
 import tensorflow as tf
 import math
 
-# import attention mechanisms
 from src.__refactored__.nn_utils.attention import time_aware_attention
 from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
 
 
 ##############################################################################
-# ?????????????
+# MCE (CBOW with Time Aware Attention)
 ##############################################################################
 class TaAttnModel(ModelTemplate):
     def __init__(self,scope,dataset):
@@ -55,7 +54,6 @@ class TaAttnModel(ModelTemplate):
         self.final_emb_sim, self.final_wgt_sim = self.build_similarity()
 
     def build_loss_optimizer(self):
-
         # Construct the variables for the NCE loss
         with tf.name_scope('weights'):
             nce_weights = tf.Variable(
@@ -110,9 +108,8 @@ class TaAttnModel(ModelTemplate):
             init_code_embed = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
-        ##############################################################################
-        # ?????????????
-        ##############################################################################
-        context_fusion = time_aware_attention(self.train_inputs,context_embed,self.context_mask,self.embedding_size,k=100)
+
+        with tf.name_scope('ta_attn'):
+            context_fusion = time_aware_attention(self.train_inputs,context_embed,self.context_mask,self.embedding_size,k=100)
         return context_fusion, code_embeddings
 

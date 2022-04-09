@@ -55,7 +55,6 @@ class SAModel(ModelTemplate):
         self.final_emb_sim, self.final_wgt_sim = self.build_similarity()
 
     def build_loss_optimizer(self):
-
         # Construct the variables for the NCE loss
         with tf.name_scope('weights'):
             nce_weights = tf.Variable(
