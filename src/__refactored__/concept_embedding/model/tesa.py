@@ -25,7 +25,6 @@ class TesaNonDateModel(ModelTemplate):
         self.final_wgt_sim = None
         self.final_emb_sim = None
 
-        self.context_dates = None
         self.train_masks = None
 
         # ---- place holder -----
