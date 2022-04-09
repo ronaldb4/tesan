@@ -9,9 +9,9 @@ from src.__refactored__.concept_embedding.models.__template_model__ import Model
 ##############################################################################
 # TeSAN - proposed model
 ##############################################################################
-class TesaModel(ModelTemplate):
+class TeSANModel(ModelTemplate):
     def __init__(self,scope,dataset):
-        super(TesaModel, self).__init__(scope,dataset)
+        super(TeSANModel, self).__init__(scope,dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -26,7 +26,6 @@ class TesaModel(ModelTemplate):
         self.final_emb_sim = None
 
         self.context_dates = None
-        self.train_masks = None
 
         # ---- place holder -----
         self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 3], name='train_inputs')
@@ -115,7 +114,7 @@ class TesaModel(ModelTemplate):
         ##############################################################################
         # TeSAN - proposed model
         ##############################################################################
-        with tf.name_scope('tesa'):
+        with tf.name_scope('tesan'):
             # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]
             init_date_embed = tf.random_uniform([self.dates_size, self.embedding_size], -1.0, 1.0)
             date_embeddings = tf.Variable(init_date_embed)

@@ -7,11 +7,11 @@ from src.__refactored__.concept_embedding.models.__template_model__ import Model
 
 
 ##############################################################################
-# TeSAN - proposed model
+# TeSA - variant for ablation study
 ##############################################################################
-class TesaModel(ModelTemplate):
+class TesaNonDateModel(ModelTemplate):
     def __init__(self,scope,dataset):
-        super(TesaModel, self).__init__(scope,dataset)
+        super(TesaNonDateModel, self).__init__(scope,dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -113,7 +113,7 @@ class TesaModel(ModelTemplate):
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
         ##############################################################################
-        # TeSAN - proposed model
+        # TeSA - variant for ablation study
         ##############################################################################
         with tf.name_scope('tesa'):
             # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]

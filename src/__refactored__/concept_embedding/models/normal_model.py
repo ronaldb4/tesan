@@ -25,16 +25,11 @@ class NormalModel(ModelTemplate):
         self.final_wgt_sim = None
         self.final_emb_sim = None
 
-        self.context_dates = None
         self.train_masks = None
 
         # ---- place holder -----
-        if self.is_date_encoding:
-            self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 3], name='train_inputs')
-            self.context_dates = self.train_inputs[:, :, 2]
-        else:
-            self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
-            self.train_masks = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
+        self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
+        self.train_masks = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
 
         self.train_labels = tf.compat.v1.placeholder(tf.int32, shape=[None, 1], name='train_labels')
         self.valid_dataset = tf.constant(self.valid_samples, dtype=tf.int32, name='valid_samples')
