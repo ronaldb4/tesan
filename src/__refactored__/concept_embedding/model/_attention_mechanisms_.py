@@ -5,30 +5,19 @@ from src.__refactored__.nn_utils.nn import linear, dropout, bn_dense_layer,get_l
 
 
 # # ----------------------fundamental-----------------------------
+# ##########################################################
+# the following is ref'd in many of the attention mechanisms
+# ##########################################################
 def scaled_tanh(x, scale=5.):
     return scale * tf.nn.tanh(1. / scale * x)
 
-
-# def traditional_attention(rep_tensor, rep_mask, scope=None,
-#                           keep_prob=1., is_train=None, wd=0., activation='elu',
-#                           tensor_dict=None, name=None):
-#     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
-#     ivec = rep_tensor.get_shape()[2]
-#     with tf.compat.v1.variable_scope(scope or 'traditional_attention'):
-#         rep_tensor_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
-#                                         False, wd, keep_prob, is_train)
-#
-#         rep_tensor_logits = get_logits([rep_tensor_map], None, False, scope='self_attn_logits',
-#                                        mask=rep_mask, input_keep_prob=keep_prob, is_train=is_train)  # bs,sl
-#         attn_res = softsel(rep_tensor, rep_tensor_logits, rep_mask)  # bs,vec
-#
-#         # save attn
-#         if tensor_dict is not None and name is not None:
-#             tensor_dict[name] = tf.nn.softmax(rep_tensor_logits)
-#
-#         return attn_res
-
-
+# ##########################################################
+# many of these are unique to a particular embedding model,
+# but a few are common - mostly with the Fusion model whose
+# whose purpose and use I have not been able to identify
+# if we figure out that fusion is unused, I think I'd want
+# to move the attention models to their appropriate models
+# ##########################################################
 def multi_dimensional_attention(rep_tensor, rep_mask, keep_prob=1., is_train=None, wd=0., activation='relu'):
     # bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape()[2]
@@ -44,107 +33,6 @@ def multi_dimensional_attention(rep_tensor, rep_mask, keep_prob=1., is_train=Non
 
         return attn_output
 
-
-# def directional_attention_with_dense(
-#         rep_tensor, rep_mask, direction=None, scope=None,
-#         keep_prob=1., is_train=None, wd=0., activation='elu',
-#         tensor_dict=None, name=None, hn=None):
-#
-#     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
-#     ivec = rep_tensor.get_shape().as_list()[2]
-#     ivec = hn or ivec
-#     with tf.compat.v1.variable_scope(scope or 'directional_attention_%s' % direction or 'diag'):
-#         # mask generation
-#         sl_indices = tf.range(sl, dtype=tf.int32)
-#         sl_col, sl_row = tf.meshgrid(sl_indices, sl_indices)
-#         if direction is None:
-#             direct_mask = tf.cast(tf.diag(- tf.ones([sl], tf.int32)) + 1, tf.bool)
-#         else:
-#             if direction == 'forward':
-#                 direct_mask = tf.greater(sl_row, sl_col)
-#             else:
-#                 direct_mask = tf.greater(sl_col, sl_row)
-#         direct_mask_tile = tf.tile(tf.expand_dims(direct_mask, 0), [bs, 1, 1])  # bs,sl,sl
-#         rep_mask_tile = tf.tile(tf.expand_dims(rep_mask, 1), [1, sl, 1])  # bs,sl,sl
-#         attn_mask = tf.logical_and(direct_mask_tile, rep_mask_tile)  # bs,sl,sl
-#
-#         # non-linear
-#         rep_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
-#                                  False, wd, keep_prob, is_train)
-#         rep_map_tile = tf.tile(tf.expand_dims(rep_map, 1), [1, sl, 1, 1])  # bs,sl,sl,vec
-#         rep_map_dp = dropout(rep_map, keep_prob, is_train)
-#
-#         # attention
-#         with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
-#             f_bias = tf.compat.v1.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
-#             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # bs,sl,vec
-#             dependent_etd = tf.expand_dims(dependent, 1)  # bs,1,sl,vec
-#             head = linear(rep_map_dp, ivec, False, scope='linear_head') # bs,sl,vec
-#             head_etd = tf.expand_dims(head, 2)  # bs,sl,1,vec
-#
-#             logits = scaled_tanh(dependent_etd + head_etd + f_bias, 5.0)  # bs,sl,sl,vec
-#
-#             logits_masked = exp_mask_for_high_rank(logits, attn_mask)
-#             attn_score = tf.nn.softmax(logits_masked, 2)  # bs,sl,sl,vec
-#             attn_score = mask_for_high_rank(attn_score, attn_mask)
-#
-#             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
-#
-#         with tf.compat.v1.variable_scope('output'):
-#             o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
-#             # input gate
-#             fusion_gate = tf.nn.sigmoid(
-#                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
-#                 linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
-#                 o_bias)
-#             output = fusion_gate * rep_map + (1-fusion_gate) * attn_result
-#             output = mask_for_high_rank(output, rep_mask)
-#
-#         # save attn
-#         if tensor_dict is not None and name is not None:
-#             tensor_dict[name + '_dependent'] = dependent
-#             tensor_dict[name + '_head'] = head
-#             tensor_dict[name] = attn_score
-#             tensor_dict[name + '_gate'] = fusion_gate
-#         return output
-
-
-
-###########################################################################
-# differs from similarly named in ablation_study.py (added below) - appears unused
-###########################################################################
-"""
-def normal_attention(rep_tensor, rep_mask, scope=None,
-                          keep_prob=1., is_train=None, wd=0., activation='elu',
-                          tensor_dict=None, name=None):
-    batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
-    ivec = rep_tensor.get_shape()[2]
-    with tf.compat.v1.variable_scope(scope or 'normal_attention'):
-        rep_tensor_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
-                                        False, wd, keep_prob, is_train)
-
-        rep_tensor_logits = get_logits([rep_tensor_map], None, False, scope='self_attn_logits',
-                                       mask=rep_mask, input_keep_prob=keep_prob, is_train=is_train)  # bs,sl
-        attn_result = softsel(rep_tensor, rep_tensor_logits, rep_mask)  # bs,vec
-
-        # save attn
-        if tensor_dict is not None and name is not None:
-            tensor_dict[name] = tf.nn.softmax(rep_tensor_logits)
-
-        with tf.compat.v1.variable_scope('output'):
-            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
-            # input gate
-            fusion_gate = tf.nn.sigmoid(
-                linear(rep_tensor_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
-                linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
-                o_bias)
-            output = fusion_gate * rep_tensor_map + (1-fusion_gate) * attn_result
-            output = mask_for_high_rank(output, rep_mask)# bs,sl,vec
-        return output
-"""
-###########################################################################
-# differs from similarly named in _attention_mechanisms_.py
-###########################################################################
 def normal_attention(rep_tensor, rep_mask,keep_prob=1., is_train=None, wd=0., activation='elu'):
 
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
@@ -449,6 +337,128 @@ def time_aware_attention(train_inputs, embed, mask, embedding_size, k):
         reduced_embed = tf.multiply(reduced_embed, scalar2)
 
         return reduced_embed, attn_embed_weighted
+
+
+##############################################################################################################
+# defined in original code, but unused
+##############################################################################################################
+# def traditional_attention(rep_tensor, rep_mask, scope=None,
+#                           keep_prob=1., is_train=None, wd=0., activation='elu',
+#                           tensor_dict=None, name=None):
+#     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
+#     ivec = rep_tensor.get_shape()[2]
+#     with tf.compat.v1.variable_scope(scope or 'traditional_attention'):
+#         rep_tensor_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
+#                                         False, wd, keep_prob, is_train)
+#
+#         rep_tensor_logits = get_logits([rep_tensor_map], None, False, scope='self_attn_logits',
+#                                        mask=rep_mask, input_keep_prob=keep_prob, is_train=is_train)  # bs,sl
+#         attn_res = softsel(rep_tensor, rep_tensor_logits, rep_mask)  # bs,vec
+#
+#         # save attn
+#         if tensor_dict is not None and name is not None:
+#             tensor_dict[name] = tf.nn.softmax(rep_tensor_logits)
+#
+#         return attn_res
+
+
+# def directional_attention_with_dense(
+#         rep_tensor, rep_mask, direction=None, scope=None,
+#         keep_prob=1., is_train=None, wd=0., activation='elu',
+#         tensor_dict=None, name=None, hn=None):
+#
+#     bs, sl, vec = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
+#     ivec = rep_tensor.get_shape().as_list()[2]
+#     ivec = hn or ivec
+#     with tf.compat.v1.variable_scope(scope or 'directional_attention_%s' % direction or 'diag'):
+#         # mask generation
+#         sl_indices = tf.range(sl, dtype=tf.int32)
+#         sl_col, sl_row = tf.meshgrid(sl_indices, sl_indices)
+#         if direction is None:
+#             direct_mask = tf.cast(tf.diag(- tf.ones([sl], tf.int32)) + 1, tf.bool)
+#         else:
+#             if direction == 'forward':
+#                 direct_mask = tf.greater(sl_row, sl_col)
+#             else:
+#                 direct_mask = tf.greater(sl_col, sl_row)
+#         direct_mask_tile = tf.tile(tf.expand_dims(direct_mask, 0), [bs, 1, 1])  # bs,sl,sl
+#         rep_mask_tile = tf.tile(tf.expand_dims(rep_mask, 1), [1, sl, 1])  # bs,sl,sl
+#         attn_mask = tf.logical_and(direct_mask_tile, rep_mask_tile)  # bs,sl,sl
+#
+#         # non-linear
+#         rep_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
+#                                  False, wd, keep_prob, is_train)
+#         rep_map_tile = tf.tile(tf.expand_dims(rep_map, 1), [1, sl, 1, 1])  # bs,sl,sl,vec
+#         rep_map_dp = dropout(rep_map, keep_prob, is_train)
+#
+#         # attention
+#         with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+#             f_bias = tf.compat.v1.get_variable('f_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+#             dependent = linear(rep_map_dp, ivec, False, scope='linear_dependent')  # bs,sl,vec
+#             dependent_etd = tf.expand_dims(dependent, 1)  # bs,1,sl,vec
+#             head = linear(rep_map_dp, ivec, False, scope='linear_head') # bs,sl,vec
+#             head_etd = tf.expand_dims(head, 2)  # bs,sl,1,vec
+#
+#             logits = scaled_tanh(dependent_etd + head_etd + f_bias, 5.0)  # bs,sl,sl,vec
+#
+#             logits_masked = exp_mask_for_high_rank(logits, attn_mask)
+#             attn_score = tf.nn.softmax(logits_masked, 2)  # bs,sl,sl,vec
+#             attn_score = mask_for_high_rank(attn_score, attn_mask)
+#
+#             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
+#
+#         with tf.compat.v1.variable_scope('output'):
+#             o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+#             # input gate
+#             fusion_gate = tf.nn.sigmoid(
+#                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
+#                 linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
+#                 o_bias)
+#             output = fusion_gate * rep_map + (1-fusion_gate) * attn_result
+#             output = mask_for_high_rank(output, rep_mask)
+#
+#         # save attn
+#         if tensor_dict is not None and name is not None:
+#             tensor_dict[name + '_dependent'] = dependent
+#             tensor_dict[name + '_head'] = head
+#             tensor_dict[name] = attn_score
+#             tensor_dict[name + '_gate'] = fusion_gate
+#         return output
+
+
+
+###########################################################################
+# differs from similarly named in ablation_study.py (added below) - appears unused
+###########################################################################
+"""
+def normal_attention(rep_tensor, rep_mask, scope=None,
+                          keep_prob=1., is_train=None, wd=0., activation='elu',
+                          tensor_dict=None, name=None):
+    batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
+    ivec = rep_tensor.get_shape()[2]
+    with tf.compat.v1.variable_scope(scope or 'normal_attention'):
+        rep_tensor_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
+                                        False, wd, keep_prob, is_train)
+
+        rep_tensor_logits = get_logits([rep_tensor_map], None, False, scope='self_attn_logits',
+                                       mask=rep_mask, input_keep_prob=keep_prob, is_train=is_train)  # bs,sl
+        attn_result = softsel(rep_tensor, rep_tensor_logits, rep_mask)  # bs,vec
+
+        # save attn
+        if tensor_dict is not None and name is not None:
+            tensor_dict[name] = tf.nn.softmax(rep_tensor_logits)
+
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+            # input gate
+            fusion_gate = tf.nn.sigmoid(
+                linear(rep_tensor_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
+                linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
+                o_bias)
+            output = fusion_gate * rep_tensor_map + (1-fusion_gate) * attn_result
+            output = mask_for_high_rank(output, rep_mask)# bs,sl,vec
+        return output
+"""
 
 
 # def fusion_gate(rep1,rep2,wd, keep_prob, is_train):

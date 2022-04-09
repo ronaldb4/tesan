@@ -5,7 +5,7 @@ from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
 from src.__refactored__.mortality_prediction.model._dynamic_rnn_ import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
-from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
+from src.__refactored__.mortality_prediction.model.__template__ import ModelTemplate
 from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
 
 

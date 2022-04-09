@@ -1,7 +1,9 @@
 import tensorflow as tf
 from src.__refactored__.nn_utils.general import flatten, reconstruct
 
-
+# ##########################################################
+# this is common to all mortality prediction models
+# ##########################################################
 def dynamic_rnn(cell, inputs, sequence_length=None, initial_state=None,
                 dtype=None, parallel_iterations=None, swap_memory=False,
                 time_major=False, scope=None):
