@@ -23,9 +23,9 @@ class ModelTemplate(metaclass=ABCMeta):
         #-----------------------------------------------
         # Hierarchical TeSa
         #-----------------------------------------------
-        self.is_plus_sa = cfg.is_plus_sa                    # default=True, help='add multi-dim self-attention'
-        self.is_plus_date = cfg.is_plus_date                # default=True, help='add temporal interval'
-        self.predict_type = cfg.predict_type                # default='dx', help='dx:diagnosis; re:readmission,death: mortality, los: length of stay'
+        # self.is_plus_sa = cfg.is_plus_sa                    # default=True, help='add multi-dim self-attention'
+        # self.is_plus_date = cfg.is_plus_date                # default=True, help='add temporal interval'
+        # self.predict_type = cfg.predict_type                # default='dx', help='dx:diagnosis; re:readmission,death: mortality, los: length of stay'
 
         #-----------------------------------------------
         # training

@@ -112,7 +112,7 @@ class TesaNonDateModel(ModelTemplate):
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
         ##############################################################################
-        # TeSA - variant for ablation study
+        # TeSA - ???????? variant for ablation study ????????
         ##############################################################################
         with tf.name_scope('tesa'):
             # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]

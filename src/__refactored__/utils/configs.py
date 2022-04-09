@@ -31,7 +31,7 @@ class Configs(object):
         parser.add_argument('--debug', type='bool', default=False, help='whether run as debug mode')
         parser.add_argument('--mode', type=str, default='train', help='train, dev, or test')
         parser.add_argument('--model', type=str, default='tesa', help='tesa, vanila_sa, or cbow')
-        parser.add_argument('--network_type', type=str, default='cbow', help='cbow or sg')
+        # parser.add_argument('--network_type', type=str, default='cbow', help='cbow or sg')
         parser.add_argument('--data_source', type=str, default='mimic3', help='mimic3 or cms')
         parser.add_argument('--gpu', type=int, default=0, help='eval_period')
         parser.add_argument('--gpu_mem', type=float, default=None, help='eval_period')
@@ -51,10 +51,10 @@ class Configs(object):
         parser.add_argument('--num_per_step', type=int, default=200, help='number of per step')
 
         # @ ----------------Hierarchical TeSa----------------------
-        parser.add_argument('--is_plus_date', type='bool', default=True, help='add temporal interval')
-        parser.add_argument('--is_plus_sa', type='bool', default=True, help='add multi-dim self-attention')
-        parser.add_argument('--task_type', type=str, default='none', help='type1: dx and readmission in future visit;type2: los and death in current visit')
-        parser.add_argument('--predict_type', type=str, default='dx', help='dx:diagnosis; re:readmission,death: mortality, los: length of stay')
+        # parser.add_argument('--is_plus_date', type='bool', default=True, help='add temporal interval')
+        # parser.add_argument('--is_plus_sa', type='bool', default=True, help='add multi-dim self-attention')
+        # parser.add_argument('--task_type', type=str, default='none', help='type1: dx and readmission in future visit;type2: los and death in current visit')
+        # parser.add_argument('--predict_type', type=str, default='dx', help='dx:diagnosis; re:readmission,death: mortality, los: length of stay')
 
         # @ ----------training ------
         parser.add_argument('--max_epoch', type=int, default=20, help='Max Epoch Number')
