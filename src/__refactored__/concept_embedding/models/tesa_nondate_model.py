@@ -2,7 +2,7 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.nn_utils.attention import multi_dimensional_attention, temporal_delta_sa_with_dense
+from src.__refactored__.nn_utils.attention import multi_dimensional_attention, temporal_delta_sa_with_dense, temporal_date_sa_with_dense
 from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
 
 
@@ -29,12 +29,8 @@ class TesaModel(ModelTemplate):
         self.train_masks = None
 
         # ---- place holder -----
-        if self.is_date_encoding:
-            self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 3], name='train_inputs')
-            self.context_dates = self.train_inputs[:, :, 2]
-        else:
-            self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
-            self.train_masks = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
+        self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
+        self.train_masks = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
 
         self.train_labels = tf.compat.v1.placeholder(tf.int32, shape=[None, 1], name='train_labels')
         self.valid_dataset = tf.constant(self.valid_samples, dtype=tf.int32, name='valid_samples')
@@ -129,12 +125,12 @@ class TesaModel(ModelTemplate):
             # self_attention
             cntxt_embed = temporal_delta_sa_with_dense(rep_tensor=context_embed,
                                                        rep_mask=self.context_mask,
-                                                       delta_tensor = date_embed,
+                                                       delta_tensor=date_embed,
                                                        is_train=True,
                                                        activation=self.activation,
-                                                       is_scale = self.is_scale)
+                                                       is_scale=self.is_scale)
 
             # Attention pooling
-            context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
+            context_fusion = multi_dimensional_attention(cntxt_embed, self.context_mask, is_train=True)
         return context_fusion, code_embeddings
 
