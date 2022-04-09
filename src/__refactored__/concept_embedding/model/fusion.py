@@ -1,16 +1,19 @@
 import tensorflow as tf
 import math
 
-from src.__refactored__.nn_utils.general import mask_for_high_rank
-from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
+# import attention mechanisms
+from src.__refactored__.concept_embedding.model._attention_mechanisms_ import multi_dimensional_attention, self_attention_with_dense, \
+    bn_dense_layer,\
+    time_aware_attention
+from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
 
 
 ##############################################################################
-# CBOW - Baseline Method
+# ?????????????
 ##############################################################################
-class CBOWModel(ModelTemplate):
+class FusionModel(ModelTemplate):
     def __init__(self,scope,dataset):
-        super(CBOWModel, self).__init__(scope,dataset)
+        super(FusionModel, self).__init__(scope,dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -54,6 +57,7 @@ class CBOWModel(ModelTemplate):
         self.final_emb_sim, self.final_wgt_sim = self.build_similarity()
 
     def build_loss_optimizer(self):
+
         # Construct the variables for the NCE loss
         with tf.name_scope('weights'):
             nce_weights = tf.Variable(
@@ -109,9 +113,20 @@ class CBOWModel(ModelTemplate):
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
-        with tf.name_scope('cbow'):
-            cntxt_embed = mask_for_high_rank(context_embed, self.context_mask)# bs,sl,vec
-            context_fusion = tf.reduce_mean(cntxt_embed, 1)
+        with tf.name_scope('fusion'):
+            # self-attention
+            code2code = self_attention_with_dense(rep_tensor=context_embed, rep_mask=self.context_mask,
+                                                  is_train=True,activation=self.activation)
+            # attention pooling
+            source2code = multi_dimensional_attention(code2code,self.context_mask,is_train=True)
+            # time-aware attention
+            ta_attn_res = time_aware_attention(self.train_inputs,context_embed,self.context_mask,self.embedding_size,k=100)
 
+            ivec = ta_attn_res.get_shape()[1]
+            concat_context = tf.concat([source2code, ta_attn_res], 1)
+
+            # context_fusion = fusion_gate(source2code,ta_attn_res,wd=0., keep_prob=1., is_train=True)
+            context_fusion = bn_dense_layer(concat_context,ivec,True, 0., 'bn_dense_map', self.activation,
+                                        False, wd=0., keep_prob=1., is_train=True)
         return context_fusion, code_embeddings
 

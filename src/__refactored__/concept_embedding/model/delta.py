@@ -2,8 +2,8 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.nn_utils.attention import multi_dimensional_attention, delta_with_dense
-from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
+from src.__refactored__.concept_embedding.model._attention_mechanisms_ import multi_dimensional_attention, delta_with_dense
+from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
 
 
 ##############################################################################

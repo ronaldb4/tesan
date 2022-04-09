@@ -1,17 +1,18 @@
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.models.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
-from src.__refactored__.mortality_prediction.models.__template_model__ import ModelTemplate
-from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
+from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
+from src.__refactored__.mortality_prediction.data.datafile_util import fullpath, tesa_dict
 
 
-class SAModel(ModelTemplate):
+class MCEModel(ModelTemplate):
     def __init__(self,scope, dataset):
-        super(SAModel, self).__init__(scope, dataset)
+        super(MCEModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -72,11 +73,35 @@ class SAModel(ModelTemplate):
     def build_network(self):
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
+            # MCE - Baseline Method  (CBOW variant)
             ##############################################################################
-            sa_file = fullpath('outputs/__refactored__/concept_embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect')
-            origin_weights = np.loadtxt(sa_file, delimiter=",")
-            code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
+            mce_vectors_file = fullpath('dataset/baselines/MCE/mimic3/mimic3-attn1-e10-ne10-w6-aw20_month.vec')
+            mce_origin_dict_file = fullpath('dataset/baselines/MCE/mimic3/mmimic3_volcabs.csv')
+
+            coed_weights = dict()
+            volcabs = pd.read_csv(mce_origin_dict_file, header=0).vols.tolist()
+            with open(mce_vectors_file) as f:
+                for line in f.readlines()[2:]:
+                    w = [float(e) for e in line.split()]
+                    index = int(w[0])
+                    weight = w[1:]
+                    coed_weights['D_' + volcabs[index]] = weight
+            embedding_size = len(weight)
+            padding_array = [0] * embedding_size
+            weights = []
+            padding_count = 0
+            for k, v in tesa_dict().items():
+                if v not in coed_weights.keys():
+                    weights.append(padding_array)
+                    padding_count += 1
+                else:
+                    weights.append(coed_weights[v])
+            weights = np.array(weights, dtype=float)
+            norm1 = weights / np.linalg.norm(weights)
+            print(norm1.shape, padding_count)
+            print(volcabs)
+
+            code_embeddings = tf.Variable(norm1, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
 
         with tf.name_scope('visit_embedding'):

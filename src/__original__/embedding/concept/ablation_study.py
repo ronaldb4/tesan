@@ -5,7 +5,7 @@ from src.__original__.nn_utils.nn import linear, dropout, bn_dense_layer
 
 
 ###########################################################################
-# identical to definition in attention.py
+# identical to definition in _attention_mechanisms_.py
 ###########################################################################
 def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
                                      is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
@@ -68,7 +68,7 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
 
 
 ###########################################################################
-# identical to definition in attention.py
+# identical to definition in _attention_mechanisms_.py
 ###########################################################################
 def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
                                      is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
@@ -178,7 +178,7 @@ def temporal_delta_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
 
 
 #############################################################################################
-# differs from similarly named in attention.py - only this one used, so moved to attention.py
+# differs from similarly named in _attention_mechanisms_.py - only this one used, so moved to _attention_mechanisms_.py
 #############################################################################################
 def normal_attention(rep_tensor, rep_mask,keep_prob=1., is_train=None, wd=0., activation='elu'):
 

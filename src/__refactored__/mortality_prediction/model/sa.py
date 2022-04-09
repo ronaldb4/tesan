@@ -1,15 +1,17 @@
 import tensorflow as tf
+import numpy as np
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.models.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
-from src.__refactored__.mortality_prediction.models.__template_model__ import ModelTemplate
+from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
+from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
 
 
-class RawModel(ModelTemplate):
+class SAModel(ModelTemplate):
     def __init__(self,scope, dataset):
-        super(RawModel, self).__init__(scope, dataset)
+        super(SAModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -70,15 +72,12 @@ class RawModel(ModelTemplate):
     def build_network(self):
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # Raw - Baseline?? Method - simple one-hot encoding
+            # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
             ##############################################################################
-            # init_code_embed = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
-            # code_embeddings = tf.Variable(init_code_embed)
-            init_code_embed = tf.one_hot(self.inputs, self.vocabulary_size,on_value=1.0, off_value=0.0,axis=-1)
-            inputs_embed = bn_dense_layer(init_code_embed, self.embedding_size, True, 0.,
-                                    'bn_dense_map_linear', 'linear',
-                                    False, wd=0., keep_prob=1.,
-                                    is_train=True)
+            sa_file = fullpath('outputs/__refactored__/concept_embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect')
+            origin_weights = np.loadtxt(sa_file, delimiter=",")
+            code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
+            inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
 
         with tf.name_scope('visit_embedding'):
             # bs, max_visits, max_len_visit, embed_size

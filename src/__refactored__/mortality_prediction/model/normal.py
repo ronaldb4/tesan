@@ -3,15 +3,15 @@ import numpy as np
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.models.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
-from src.__refactored__.mortality_prediction.models.__template_model__ import ModelTemplate
+from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
 from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
 
 
-class DeltaModel(ModelTemplate):
+class NormalModel(ModelTemplate):
     def __init__(self,scope, dataset):
-        super(DeltaModel, self).__init__(scope, dataset)
+        super(NormalModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -72,12 +72,11 @@ class DeltaModel(ModelTemplate):
     def build_network(self):
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # Interval - Ablation Studies
+            # Normal_Sa - Ablation Studies
             ##############################################################################
-            delta_file = fullpath('outputs/__refactored__/concept_embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect')
+            normal_file = fullpath('outputs/__refactored__/concept_embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect')
 
-            origin_weights = np.loadtxt(delta_file, delimiter=",")
-            print(origin_weights.shape, 'delta')
+            origin_weights = np.loadtxt(normal_file, delimiter=",")
             code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
 

@@ -2,16 +2,16 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.nn_utils.attention import multi_dimensional_attention, self_attention_with_dense
-from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
+from src.__refactored__.concept_embedding.model._attention_mechanisms_ import multi_dimensional_attention, temporal_delta_sa_with_dense
+from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
 
 
 ##############################################################################
-# Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
+# TeSA - variant for ablation study
 ##############################################################################
-class SAModel(ModelTemplate):
+class TesaNonDateModel(ModelTemplate):
     def __init__(self,scope,dataset):
-        super(SAModel, self).__init__(scope,dataset)
+        super(TesaNonDateModel, self).__init__(scope,dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -25,6 +25,7 @@ class SAModel(ModelTemplate):
         self.final_wgt_sim = None
         self.final_emb_sim = None
 
+        self.context_dates = None
         self.train_masks = None
 
         # ---- place holder -----
@@ -103,6 +104,7 @@ class SAModel(ModelTemplate):
 
         return final_emb_sim, final_wgt_sim
 
+
     def build_network(self):
         # Look up embeddings for inputs.
         with tf.name_scope('code_embeddings'):
@@ -111,17 +113,24 @@ class SAModel(ModelTemplate):
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
         ##############################################################################
-        # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
+        # TeSA - variant for ablation study
         ##############################################################################
-        with tf.name_scope('sa'):
-            #self_attention
-            cntxt_embed = self_attention_with_dense(rep_tensor=context_embed,
-                                                    rep_mask=self.context_mask,
-                                                    is_train=True,
-                                                    activation=self.activation,
-                                                    is_scale = self.is_scale)
+        with tf.name_scope('tesa'):
+            # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]
+            init_date_embed = tf.random_uniform([self.dates_size, self.embedding_size], -1.0, 1.0)
+            date_embeddings = tf.Variable(init_date_embed)
 
-            # attention pooling
-            context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
+            date_embed = tf.nn.embedding_lookup(date_embeddings, self.train_masks)
+
+            # self_attention
+            cntxt_embed = temporal_delta_sa_with_dense(rep_tensor=context_embed,
+                                                       rep_mask=self.context_mask,
+                                                       delta_tensor=date_embed,
+                                                       is_train=True,
+                                                       activation=self.activation,
+                                                       is_scale=self.is_scale)
+
+            # Attention pooling
+            context_fusion = multi_dimensional_attention(cntxt_embed, self.context_mask, is_train=True)
         return context_fusion, code_embeddings
 

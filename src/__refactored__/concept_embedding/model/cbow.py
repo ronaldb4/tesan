@@ -1,16 +1,16 @@
 import tensorflow as tf
 import math
 
-from src.__refactored__.nn_utils.attention import time_aware_attention
-from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
+from src.__refactored__.nn_utils.general import mask_for_high_rank
+from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
 
 
 ##############################################################################
-# MCE (CBOW with Time Aware Attention)
+# CBOW - Baseline Method
 ##############################################################################
-class TaAttnModel(ModelTemplate):
+class CBOWModel(ModelTemplate):
     def __init__(self,scope,dataset):
-        super(TaAttnModel, self).__init__(scope,dataset)
+        super(CBOWModel, self).__init__(scope,dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -109,7 +109,9 @@ class TaAttnModel(ModelTemplate):
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
-        with tf.name_scope('ta_attn'):
-            context_fusion = time_aware_attention(self.train_inputs,context_embed,self.context_mask,self.embedding_size,k=100)
+        with tf.name_scope('cbow'):
+            cntxt_embed = mask_for_high_rank(context_embed, self.context_mask)# bs,sl,vec
+            context_fusion = tf.reduce_mean(cntxt_embed, 1)
+
         return context_fusion, code_embeddings
 

@@ -2,16 +2,16 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.nn_utils.attention import multi_dimensional_attention, normal_attention
-from src.__refactored__.concept_embedding.models.__template_model__ import ModelTemplate
+from src.__refactored__.concept_embedding.model._attention_mechanisms_ import multi_dimensional_attention, temporal_date_sa_with_dense
+from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
 
 
 ##############################################################################
-# Normal_Sa - Ablation Studies
+# TeSAN - proposed model
 ##############################################################################
-class NormalModel(ModelTemplate):
+class TeSANModel(ModelTemplate):
     def __init__(self,scope,dataset):
-        super(NormalModel, self).__init__(scope,dataset)
+        super(TeSANModel, self).__init__(scope,dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -25,11 +25,11 @@ class NormalModel(ModelTemplate):
         self.final_wgt_sim = None
         self.final_emb_sim = None
 
-        self.train_masks = None
+        self.context_dates = None
 
         # ---- place holder -----
-        self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
-        self.train_masks = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
+        self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 3], name='train_inputs')
+        self.context_dates = self.train_inputs[:, :, 2]
 
         self.train_labels = tf.compat.v1.placeholder(tf.int32, shape=[None, 1], name='train_labels')
         self.valid_dataset = tf.constant(self.valid_samples, dtype=tf.int32, name='valid_samples')
@@ -103,6 +103,7 @@ class NormalModel(ModelTemplate):
 
         return final_emb_sim, final_wgt_sim
 
+
     def build_network(self):
         # Look up embeddings for inputs.
         with tf.name_scope('code_embeddings'):
@@ -110,15 +111,25 @@ class NormalModel(ModelTemplate):
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
-        with tf.name_scope('normal'):
-            #self_attention
-            cntxt_embed = normal_attention(rep_tensor=context_embed,
-                                                    rep_mask=self.context_mask,
-                                                    is_train=True,
-                                                    activation=self.activation)
+        ##############################################################################
+        # TeSAN - proposed model
+        ##############################################################################
+        with tf.name_scope('tesan'):
+            # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]
+            init_date_embed = tf.random_uniform([self.dates_size, self.embedding_size], -1.0, 1.0)
+            date_embeddings = tf.Variable(init_date_embed)
 
-            # attention pooling
-            context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
+            date_embed = tf.nn.embedding_lookup(date_embeddings, self.context_dates)
 
+            # self_attention
+            cntxt_embed = temporal_date_sa_with_dense(rep_tensor=context_embed,
+                                                      rep_mask=self.context_mask,
+                                                      date_tensor=date_embed,
+                                                      is_train=True,
+                                                      activation=self.activation,
+                                                      is_scale=self.is_scale)
+
+            # Attention pooling
+            context_fusion = multi_dimensional_attention(cntxt_embed, self.context_mask, is_train=True)
         return context_fusion, code_embeddings
 

@@ -1,20 +1,17 @@
 import tensorflow as tf
-import json
 import numpy as np
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.models.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
-from src.__refactored__.mortality_prediction.models.__template_model__ import ModelTemplate
-from src.__refactored__.mortality_prediction.data.datafile_util import fullpath, tesa_dict
+from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
+from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
 
 
-class Med2VecModel(ModelTemplate):
-
+class SGModel(ModelTemplate):
     def __init__(self,scope, dataset):
-
-        super(Med2VecModel, self).__init__(scope, dataset)
+        super(SGModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -73,34 +70,20 @@ class Med2VecModel(ModelTemplate):
         return relevant
 
     def build_network(self):
-
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # med2vec - Baseline Method
+            # Skip-gram - Baseline Method
             ##############################################################################
-            med2vec_vectors_file = fullpath('dataset/baselines/med2vec/mimic3/outputs_med2vec.9.npz')
-            med2vec_origin_dict_file = fullpath('dataset/baselines/med2vec/mimic3/outputs.types')
+            sg_file = fullpath('dataset/baselines/SG/mimic3/sg_sk_6_epoch_10.vect')
 
-            origin_weights = np.load(med2vec_vectors_file)
-            origin_weights = origin_weights['W_emb']
+            origin_weights = np.loadtxt(sg_file, delimiter=",")
+            weights = []
             embedding_size = origin_weights.shape[1]
             padding_array = np.zeros(embedding_size)
-            with open(med2vec_origin_dict_file) as read_file:
-                origin_dict = json.load(read_file)
-            new_dict = {}
-            for k in origin_dict.keys():
-                key = k.replace('.', '')
-                new_dict[key] = origin_dict[k]
-            weights = []
-            padding_count = 0
-            for k, v in tesa_dict().items():
-                if v not in new_dict.keys():
-                    weights.append(padding_array)
-                    padding_count += 1
-                else:
-                    weights.append(origin_weights[new_dict[v]])
+            weights.append(padding_array)
+            for i in range(origin_weights.shape[0]):
+                weights.append(origin_weights[i])
             weights = np.array(weights, dtype=float)
-            print(weights.shape, padding_count)
 
             code_embeddings = tf.Variable(weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)

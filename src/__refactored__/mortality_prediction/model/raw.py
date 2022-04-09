@@ -1,17 +1,15 @@
 import tensorflow as tf
-import numpy as np
 
 from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.nn_utils.nn import bn_dense_layer
-from src.__refactored__.mortality_prediction.models.nn_utils.rnn import dynamic_rnn
+from src.__refactored__.mortality_prediction.model.nn_utils.rnn import dynamic_rnn
 from src.__refactored__.utils.configs import cfg
-from src.__refactored__.mortality_prediction.models.__template_model__ import ModelTemplate
-from src.__refactored__.mortality_prediction.data.datafile_util import fullpath
+from src.__refactored__.mortality_prediction.model.__template_model__ import ModelTemplate
 
 
-class SGModel(ModelTemplate):
+class RawModel(ModelTemplate):
     def __init__(self,scope, dataset):
-        super(SGModel, self).__init__(scope, dataset)
+        super(RawModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -72,21 +70,15 @@ class SGModel(ModelTemplate):
     def build_network(self):
         with tf.name_scope('code_embeddings'):
             ##############################################################################
-            # Skip-gram - Baseline Method
+            # Raw - Baseline?? Method - simple one-hot encoding
             ##############################################################################
-            sg_file = fullpath('dataset/baselines/SG/mimic3/sg_sk_6_epoch_10.vect')
-
-            origin_weights = np.loadtxt(sg_file, delimiter=",")
-            weights = []
-            embedding_size = origin_weights.shape[1]
-            padding_array = np.zeros(embedding_size)
-            weights.append(padding_array)
-            for i in range(origin_weights.shape[0]):
-                weights.append(origin_weights[i])
-            weights = np.array(weights, dtype=float)
-
-            code_embeddings = tf.Variable(weights, dtype=tf.float32)
-            inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
+            # init_code_embed = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
+            # code_embeddings = tf.Variable(init_code_embed)
+            init_code_embed = tf.one_hot(self.inputs, self.vocabulary_size,on_value=1.0, off_value=0.0,axis=-1)
+            inputs_embed = bn_dense_layer(init_code_embed, self.embedding_size, True, 0.,
+                                    'bn_dense_map_linear', 'linear',
+                                    False, wd=0., keep_prob=1.,
+                                    is_train=True)
 
         with tf.name_scope('visit_embedding'):
             # bs, max_visits, max_len_visit, embed_size
