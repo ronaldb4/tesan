@@ -98,8 +98,6 @@ class MCEModel(ModelTemplate):
                     weights.append(coed_weights[v])
             weights = np.array(weights, dtype=float)
             norm1 = weights / np.linalg.norm(weights)
-            print(norm1.shape, padding_count)
-            print(volcabs)
 
             code_embeddings = tf.Variable(norm1, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)

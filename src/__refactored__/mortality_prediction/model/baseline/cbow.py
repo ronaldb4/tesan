@@ -84,7 +84,6 @@ class CBOWModel(ModelTemplate):
             for i in range(origin_weights.shape[0]):
                 weights.append(origin_weights[i])
             weights = np.array(weights, dtype=float)
-            print(weights.shape, 'CBOW')
 
             # code_embeddings = tf.Variable(init_code_embed, dtype=tf.float32)
             code_embeddings = tf.Variable(weights, dtype=tf.float32)

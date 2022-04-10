@@ -77,7 +77,6 @@ class DeltaModel(ModelTemplate):
             delta_file = fullpath('outputs/__refactored__/concept_embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect')
 
             origin_weights = np.loadtxt(delta_file, delimiter=",")
-            print(origin_weights.shape, 'delta')
             code_embeddings = tf.Variable(origin_weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
 

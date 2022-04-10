@@ -11,9 +11,7 @@ from src.__refactored__.mortality_prediction.data.datafile_util import fullpath,
 
 
 class Med2VecModel(ModelTemplate):
-
     def __init__(self,scope, dataset):
-
         super(Med2VecModel, self).__init__(scope, dataset)
         # ------ start ------
         self.max_visits = dataset.max_visits
@@ -73,7 +71,6 @@ class Med2VecModel(ModelTemplate):
         return relevant
 
     def build_network(self):
-
         with tf.name_scope('code_embeddings'):
             ##############################################################################
             # med2vec - Baseline Method
@@ -100,7 +97,6 @@ class Med2VecModel(ModelTemplate):
                 else:
                     weights.append(origin_weights[new_dict[v]])
             weights = np.array(weights, dtype=float)
-            print(weights.shape, padding_count)
 
             code_embeddings = tf.Variable(weights, dtype=tf.float32)
             inputs_embed = tf.nn.embedding_lookup(code_embeddings, self.inputs)
