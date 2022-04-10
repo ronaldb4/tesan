@@ -143,7 +143,7 @@ def normal_attention(rep_tensor, rep_mask, scope=None,
         return output
 """
 ###########################################################################
-# differs from similarly named in _attention_mechanisms_.py
+# differs from similarly named in _context_fusion_.py
 ###########################################################################
 def normal_attention(rep_tensor, rep_mask,keep_prob=1., is_train=None, wd=0., activation='elu'):
 

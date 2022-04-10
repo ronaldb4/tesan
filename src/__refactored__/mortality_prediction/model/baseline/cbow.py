@@ -107,14 +107,6 @@ class CBOWModel(ModelTemplate):
             # the batch size is 128 and the RNN cell type is GRU.
             # ############################################################
             cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
-            # if cfg.cell_type == 'gru':
-            #     cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
-            # elif cfg.cell_type == 'lstm':
-            #     cell = tf.contrib.rnn.LSTMCell(cfg.hn, reuse=reuse)
-            # elif cfg.cell_type == 'basic_lstm':
-            #     cell = tf.contrib.rnn.BasicLSTMCell(cfg.hn, reuse=reuse)
-            # elif cfg.cell_type == 'basic_rnn':
-            #     cell = tf.contrib.rnn.BasicRNNCell(cfg.hn, reuse=reuse)
 
             outputs, final_state = dynamic_rnn(cell, inputs_reduced, tensor_len, dtype=tf.float32)
         return outputs, final_state, tensor_len

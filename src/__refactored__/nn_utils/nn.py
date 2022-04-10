@@ -2,6 +2,8 @@ import tensorflow as tf
 from src.__refactored__.nn_utils.general import flatten, reconstruct, exp_mask, add_reg_without_bias
 from src.__refactored__.nn_utils.general import selu
 
+def scaled_tanh(x, scale=5.):
+    return scale * tf.nn.tanh(1. / scale * x)
 
 # ----------------------fundamental-----------------------------
 def dropout(x, keep_prob, is_train, noise_shape=None, seed=None, name=None):

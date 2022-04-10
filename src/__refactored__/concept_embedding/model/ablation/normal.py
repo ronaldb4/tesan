@@ -2,8 +2,9 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.concept_embedding.model._attention_mechanisms_ import multi_dimensional_attention, normal_attention
+from src.__refactored__.nn_utils.nn import linear, bn_dense_layer
 from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
+from src.__refactored__.concept_embedding.model._context_fusion_ import multi_dimensional_attention
 
 
 ##############################################################################
@@ -122,3 +123,39 @@ class NormalModel(ModelTemplate):
 
         return context_fusion, code_embeddings
 
+def normal_attention(rep_tensor, rep_mask,keep_prob=1., is_train=None, wd=0., activation='elu'):
+
+    batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
+    ivec = rep_tensor.get_shape().as_list()[2]
+    with tf.compat.v1.variable_scope('temporal_attention'):
+        # mask generation
+        attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
+
+        # non-linear for context
+        rep_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
+                                 False, wd, keep_prob, is_train)
+        rep_map_tile = tf.tile(tf.expand_dims(rep_map, 1), [1, code_len, 1, 1])  # bs,sl,sl,vec
+
+        # attention
+        with tf.compat.v1.variable_scope('attention'):  # bs,sl,sl,vec
+
+            align_scores = tf.matmul(rep_tensor, rep_tensor, transpose_b=True)  # [bs,slf,hn]*[bs,slt,hn]=>bs,slf,slt
+            align_scores = tf.expand_dims(align_scores, -1)  # [bs,slf,slt,1]
+
+            logits_masked = exp_mask_for_high_rank(align_scores, attn_mask)
+            attn_score = tf.nn.softmax(logits_masked, 2)  # bs,sl,sl,vec
+            attn_score = mask_for_high_rank(attn_score, attn_mask)
+
+            attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
+
+        with tf.compat.v1.variable_scope('output'):
+            o_bias = tf.compat.v1.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+            # input gate
+            fusion_gate = tf.nn.sigmoid(
+                linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
+                linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
+                o_bias)
+            output = fusion_gate * rep_map + (1 - fusion_gate) * attn_result
+            output = mask_for_high_rank(output, rep_mask)  # bs,sl,vec
+
+        return output

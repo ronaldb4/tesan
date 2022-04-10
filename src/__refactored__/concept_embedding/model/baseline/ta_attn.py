@@ -1,8 +1,9 @@
 import tensorflow as tf
 import math
 
-from src.__refactored__.concept_embedding.model._attention_mechanisms_ import time_aware_attention
+from src.__refactored__.nn_utils.general import mask_for_high_rank
 from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
+from src.__refactored__.concept_embedding.model._context_fusion_ import exp_mask_for_high_rank
 
 
 ##############################################################################
@@ -113,3 +114,46 @@ class TaAttnModel(ModelTemplate):
             context_fusion = time_aware_attention(self.train_inputs,context_embed,self.context_mask,self.embedding_size,k=100)
         return context_fusion, code_embeddings
 
+def time_aware_attention(train_inputs, embed, mask, embedding_size, k):
+    with tf.compat.v1.variable_scope('time_aware_attention'):
+        attn_weights = tf.Variable(tf.truncated_normal([embedding_size, k], stddev=1.0 / math.sqrt(k)))
+        attn_biases = tf.Variable(tf.zeros([k]))
+
+        # weight add bias
+        attn_embed = tf.nn.bias_add(attn_weights, attn_biases)
+
+        # multiplying it with Ei
+        attn_scalars = tf.tensordot(embed, attn_embed, axes=[[2], [0]])
+
+        # get abs of distance
+        train_delta = tf.abs(train_inputs[:, :, 1])
+
+        # distance function is log(dist+1)
+        dist_fun = tf.log(tf.to_float(train_delta) + 1.0)
+
+        # reshape the dist_fun
+        dist_fun = tf.reshape(dist_fun, [tf.shape(dist_fun)[0], tf.shape(dist_fun)[1], 1])
+
+        # the attribution logits
+        attn_logits = tf.multiply(attn_scalars, dist_fun)
+
+        # the attribution logits sum
+        attn_logits_sum = tf.reduce_sum(attn_logits, -1, keepdims=True)
+        attn_logits_sum = exp_mask_for_high_rank(attn_logits_sum, mask)
+
+        # get weights via softmax
+        attn_softmax = tf.nn.softmax(attn_logits_sum, 1)
+
+        # the weighted sum
+        attn_embed_weighted = tf.multiply(attn_softmax, embed)
+        attn_embed_weighted = mask_for_high_rank(attn_embed_weighted, mask)
+
+        reduced_embed = tf.reduce_sum(attn_embed_weighted, 1)
+        # obtain two scalars
+        scalar1 = tf.log(tf.to_float(tf.shape(embed)[1]) + 1.0)
+        scalar2 = tf.reduce_sum(tf.pow(attn_softmax, 2), 1)
+        # the scalared embed
+        reduced_embed = tf.multiply(reduced_embed, scalar1)
+        reduced_embed = tf.multiply(reduced_embed, scalar2)
+
+        return reduced_embed, attn_embed_weighted

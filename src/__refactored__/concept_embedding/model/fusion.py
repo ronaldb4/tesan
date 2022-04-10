@@ -2,15 +2,17 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.concept_embedding.model._attention_mechanisms_ import multi_dimensional_attention, self_attention_with_dense, \
-    bn_dense_layer,\
-    time_aware_attention
 from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
+from src.__refactored__.concept_embedding.model._context_fusion_ import multi_dimensional_attention, bn_dense_layer
 
 
 ##############################################################################
 # ?????????????
 ##############################################################################
+from src.__refactored__.concept_embedding.model.ablation.sa import self_attention_with_dense
+from src.__refactored__.concept_embedding.model.baseline.ta_attn import time_aware_attention
+
+
 class FusionModel(ModelTemplate):
     def __init__(self,scope,dataset):
         super(FusionModel, self).__init__(scope,dataset)
