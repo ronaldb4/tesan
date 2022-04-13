@@ -2,6 +2,9 @@ from src.__refactored__.utils.configs import cfg
 # from src.utils.record_log import _logger
 import tensorflow as tf
 
+#################################################################################
+# Saver - tensorflow mechanism for "re-running" code without having to re-run it
+#################################################################################
 class GraphHandler(object):
     def __init__(self, model, logging):
         self.model = model
@@ -15,6 +18,7 @@ class GraphHandler(object):
         if cfg.load_model: #or cfg.mode != 'train_dann':
             self.restore(sess)
         if cfg.mode == 'train':
+            print('cfg.summary_dir =',cfg.summary_dir)
             self.writer = tf.compat.v1.summary.FileWriter(logdir=cfg.summary_dir, graph=tf.get_default_graph())
 
     def add_summary(self, summary, global_step):

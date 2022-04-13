@@ -46,9 +46,9 @@ def train():
         data_set.build_dictionary()
         data_set.load_data()
         sample_batches = data_set.generate_batch(num_steps)
-        print(data_set.train_size)
+        print('data_set.train_size =',data_set.train_size)
         batch_num = data_set.train_size / data_set.batch_size
-        print(batch_num)
+        print('batch_num =',batch_num)
 
     sess = tf.compat.v1.Session(config=graph_config)
     with tf.compat.v1.variable_scope('concept_embedding') as scope:

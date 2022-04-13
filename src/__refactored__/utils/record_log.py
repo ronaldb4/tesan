@@ -23,6 +23,8 @@ class RecordLog(object):
                             datefmt = date_format,
                             format = format_str,
                             level = level)
+
+        print("writing to log file ",path)
         logging.info('model parameters:--------------------')
         logging.info(cfg.log_name)
 

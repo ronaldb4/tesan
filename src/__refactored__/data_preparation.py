@@ -123,10 +123,10 @@ def processing_mimic3(file_adm, file_dxx, file_txx, file_drug, file_drg, output_
                 if code == code:
                     drgs.append(code)
 
-            act['DXs'] = DXs
-            act['CPTs'] = TXs
-            act['DRGs'] = drgs
-            act['Drugs'] = drugs
+            act['DXs'] = DXs        # Diagnosis Codes
+            act['CPTs'] = TXs       # Procedure Codes
+            act['DRGs'] = drgs      # Diagnosis Related Group codes
+            act['Drugs'] = drugs    # prescribed medications
             act['Death'] = death_flag
             visits.append(act)
         print('patient {} is processed!'.format(sub_id))

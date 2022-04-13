@@ -25,7 +25,7 @@ class ConceptAndDateDataset(ConceptDataset):
 
         # store all times and corresponding counts
         count_dates = []
-        count_dates.extend(collections.Counter(all_dates).most_common())
+        count_dates.extend(collections.Counter(all_dates).most_common()) #frequency count of all_dates
 
         # add padding for time
         self.date_dict['PAD'] = 0
@@ -66,7 +66,7 @@ class ConceptAndDateDataset(ConceptDataset):
             for s_visit in selected_visits:
                 dt_index = s_visit['date_index']
                 dt = datetime.datetime.strptime(s_visit['admsn_dt'], "%Y%m%d")
-                codes = s_visit['DXs']
+                codes = s_visit['DXs'] #diagnosis codes
                 if not self.dx_only:
                     codes.extend(s_visit['CPTs'])
                 for code in codes:

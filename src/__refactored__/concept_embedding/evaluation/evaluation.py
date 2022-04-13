@@ -1,5 +1,5 @@
-from src.__refactored__.utils.icd9_ontology import ICD_Ontology as icd
-from src.__refactored__.utils.icd9_ontology import CCS_Ontology as ccs
+from src.__refactored__.utils.ontology_generator import ICD_Ontology as icd
+from src.__refactored__.utils.ontology_generator import CCS_Ontology as ccs
 from sklearn.cluster import KMeans
 from sklearn import metrics
 import numpy as np
