@@ -38,7 +38,9 @@ class Configs(object):
         parser.add_argument('--save_model', type='bool', default=True, help='save_model')
         parser.add_argument('--verbose', type='bool', default=False, help='print ...')
         parser.add_argument('--load_model', type='bool', default=False, help='load_model')
-        parser.add_argument('--task', type=str, default='prediction', help='embedding or prediction')
+
+
+        parser.add_argument('--task', type=str, default='prediction', help='embedding or prediction') #for path name, hard-coded in train.py main(_) methods
 
         # @ ------------------RNN------------------
         # ############################################################
