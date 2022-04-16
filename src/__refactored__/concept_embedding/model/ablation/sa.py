@@ -2,7 +2,8 @@ import tensorflow as tf
 import math
 
 # import attention mechanisms
-from src.__refactored__.nn_utils.nn import linear, dropout, bn_dense_layer
+from src.__refactored__.nn_utils.general import exp_mask_for_high_rank, mask_for_high_rank
+from src.__refactored__.nn_utils.nn import linear, dropout, bn_dense_layer, scaled_tanh
 from src.__refactored__.concept_embedding.model.__template__ import ModelTemplate
 from src.__refactored__.concept_embedding.model._context_fusion_ import multi_dimensional_attention
 
