@@ -2,6 +2,10 @@ import tensorflow as tf
 import numpy as np
 from os.path import join
 
+from sklearn.metrics import confusion_matrix, roc_auc_score, roc_curve
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import f1_score, auc
+
 from src.__refactored__.mortality_prediction.model.baseline.cbow import CBOWModel
 from src.__refactored__.mortality_prediction.model.baseline.glove import GloveModel
 from src.__refactored__.mortality_prediction.model.baseline.mce import MCEModel
@@ -128,7 +132,7 @@ def train():
             logging.add(log_str)
             logging.add('validating more metrics.....')
 
-            metrics = et.metric_pred(data_set.test_labels, props, yhat)
+            metrics = metric_pred(data_set.test_labels, props, yhat)
             log_str = "metrics: %s" % metrics
             logging.add(log_str)
 
@@ -167,6 +171,7 @@ def test():
 
 
 def main(_):
+    cfg.task = 'prediction'
     if cfg.mode == 'train':
         train()
     elif cfg.mode == 'test':
@@ -189,3 +194,29 @@ if __name__ == '__main__':
 
 
 
+    def metric_pred(y_true, probs, y_pred):
+        [[TN, FP], [FN, TP]] = confusion_matrix(y_true, y_pred, labels=[0, 1]).astype(float)
+        # print(TN, FP, FN, TP)
+        accuracy = (TP + TN) / (TP + TN + FP + FN)
+        specificity = TN / (FP + TN)
+        precision = TP / (TP + FP)
+        sensitivity = recall = TP / (TP + FN)
+        f_score = 2 * TP / (2 * TP + FP + FN)
+
+        # calculate AUC
+        # roc_auc = roc_auc_score(y_true, probs)
+        # print('roc_auc: %.4f' % roc_auc)
+        # calculate roc curve
+        # fpr, tpr, thresholds = roc_curve(y_true, probs)
+
+        # calculate precision-recall curve
+        precision_curve, recall_curve, thresholds = precision_recall_curve(y_true, probs)
+
+        # calculate F1 score
+        f1 = f1_score(y_true, y_pred)
+        # calculate precision-recall AUC
+        pr_auc = auc(recall_curve, precision_curve)
+
+        return [accuracy, precision, sensitivity, specificity, f_score, pr_auc, f1]
+
+        # return [accuracy, precision, sensitivity, specificity, f_score, roc_auc, pr_auc, f1]
