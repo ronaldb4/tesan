@@ -5,14 +5,20 @@ from sklearn import metrics
 import numpy as np
 from src.__refactored__.utils.configs import cfg
 
-from src.__refactored__.mortality_prediction.evaluation.__evaluation_template__ import EvaluationTemplate
 
 
-class ConceptEvaluation(EvaluationTemplate):
+class ConceptEvaluation():
     def __init__(self, model, logging):
         self.icd_file = cfg.icd_file
         self.ccs_file = cfg.ccs_file
-        super(ConceptEvaluation, self).__init__(model, logging)
+
+        self.model = model
+        self.logging = logging
+        self.reverse_dict = model.reverse_dict
+        self.dictionary = dict(zip(model.reverse_dict.values(), model.reverse_dict.keys()))
+        self.verbose = model.verbose
+        self.valid_samples = model.valid_samples
+        self.top_k = model.top_k
 
     def get_clustering_nmi(self,sess, ground_truth):
 
@@ -127,3 +133,4 @@ class ConceptEvaluation(EvaluationTemplate):
             total_pairs += v * (v-1)/2
 
         return no_cat, total_pairs
+
