@@ -21,7 +21,7 @@ class Configs(object):
         self.dataset_dir = join(self.project_dir, 'dataset', 'processed')
         self.standby_log_dir = self.mkdir(self.project_dir, 'logs/__refactored__')
         self.result_dir = self.mkdir(self.project_dir, 'outputs/__refactored__/concept_embedding')
-        self.all_model_dir = self.mkdir(self.result_dir, 'tasks/__refactored__')
+        self.all_model_dir = self.mkdir(self.result_dir, 'tasks')
 
         # ------parsing input arguments"--------
         parser = argparse.ArgumentParser()
@@ -42,7 +42,7 @@ class Configs(object):
 
         # @ ------------------RNN------------------
         # ############################################################
-        # pg 505: All models were trained with 50,00 steps;
+        # pg 505: All models were trained with 50,00[0] steps;
         # the batch size is 128 and the RNN cell type is GRU.
         # ############################################################
         # parser.add_argument('--cell_type', type=str, default='gru', help='cell unit')
@@ -51,10 +51,10 @@ class Configs(object):
         parser.add_argument('--num_per_step', type=int, default=200, help='number of per step')
 
         # @ ----------------Hierarchical TeSa----------------------
-        # parser.add_argument('--is_plus_date', type='bool', default=True, help='add temporal interval')
-        # parser.add_argument('--is_plus_sa', type='bool', default=True, help='add multi-dim self-attention')
-        # parser.add_argument('--task_type', type=str, default='none', help='type1: dx and readmission in future visit;type2: los and death in current visit')
-        # parser.add_argument('--predict_type', type=str, default='dx', help='dx:diagnosis; re:readmission,death: mortality, los: length of stay')
+        parser.add_argument('--is_plus_date', type='bool', default=True, help='add temporal interval')
+        parser.add_argument('--is_plus_sa', type='bool', default=True, help='add multi-dim self-attention')
+        parser.add_argument('--task_type', type=str, default='none', help='type1: dx and readmission in future visit;type2: los and death in current visit')
+        parser.add_argument('--predict_type', type=str, default='dx', help='dx:diagnosis; re:readmission,death: mortality, los: length of stay')
 
         # @ ----------training ------
         parser.add_argument('--max_epoch', type=int, default=20, help='Max Epoch Number')
