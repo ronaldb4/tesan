@@ -8,19 +8,6 @@ class ModelTemplate(metaclass=ABCMeta):
         self.global_step = tf.compat.v1.get_variable('global_step', shape=[], dtype=tf.int32,
                                            initializer=tf.constant_initializer(0), trainable=False)
 
-        self.valid_samples = cfg.evaluation["valid_examples"]             # list(range(1,self.valid_size+1))  # Only pick dev samples in the head of the distribution.
-        self.embedding_size = cfg.modelParams["embedding_size"]            # default=100, help='code embedding size'
-        self.activation = cfg.modelParams["activation"]                    # default='relu', help='activation function'
-        self.is_scale = cfg.modelParams["is_scale"]                        # default=True, help='to scale the attention facts'
-        self.num_samples = cfg.modelParams["num_samples"]                  # default=5, help='Number of negative examples to sample'
-
-        #---------------------------------------------------------------------------------------------------------------
-        #                                       parameters from dataset
-        #---------------------------------------------------------------------------------------------------------------
-        self.vocabulary_size = len(dataset.dictionary)
-        self.dates_size = dataset.days_size
-        self.reverse_dict = dataset.reverse_dictionary
-
         # ------ start ------
         self.tensor_dict = {}
         self.loss = None
@@ -29,6 +16,19 @@ class ModelTemplate(metaclass=ABCMeta):
         self.summary = None
         self.opt = None
         self.train_op = None
+
+        self.valid_samples = cfg.evaluation["valid_examples"]             # list(range(1,self.valid_size+1))  # Only pick dev samples in the head of the distribution.
+        self.embedding_size = cfg.modelParams["embedding_size"]            # default=100, help='code embedding size'
+        self.activation = cfg.modelParams["activation"]                    # default='relu', help='activation function'
+        self.is_scale = cfg.modelParams["is_scale"]                        # default=True, help='to scale the attention facts'
+        self.num_negative_examples = cfg.modelParams["num_negative_examples"]                  # default=5, help='Number of negative examples to sample'
+
+        #---------------------------------------------------------------------------------------------------------------
+        #                                       parameters from dataset
+        #---------------------------------------------------------------------------------------------------------------
+        self.vocabulary_size = len(dataset.dictionary)
+        self.dates_size = dataset.days_size
+        self.reverse_dict = dataset.reverse_dictionary
 
     @abstractmethod
     def build_network(self):

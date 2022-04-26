@@ -13,8 +13,8 @@ from src.concept_embedding.model._context_fusion_ import multi_dimensional_atten
 # Normal_Sa - Ablation Studies
 ##############################################################################
 class NormalModel(ModelTemplate):
-    def __init__(self,scope):
-        super(NormalModel, self).__init__(scope)
+    def __init__(self,scope, dataset):
+        super(NormalModel, self).__init__(scope, dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -71,7 +71,7 @@ class NormalModel(ModelTemplate):
             biases=nce_biases,
             labels=self.train_labels,
             inputs=self.context_fusion,
-            num_sampled=self.num_samples,
+            num_sampled=self.num_negative_examples,
             num_classes=self.vocabulary_size)
 
         # loss = tf.reduce_mean(losses, name='loss_mean')

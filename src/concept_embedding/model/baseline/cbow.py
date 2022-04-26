@@ -9,8 +9,8 @@ from src.concept_embedding.model.__template__ import ModelTemplate
 # CBOW - Baseline Method
 ##############################################################################
 class CBOWModel(ModelTemplate):
-    def __init__(self,scope):
-        super(CBOWModel, self).__init__(scope)
+    def __init__(self,scope, dataset):
+        super(CBOWModel, self).__init__(scope, dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -67,7 +67,7 @@ class CBOWModel(ModelTemplate):
             biases=nce_biases,
             labels=self.train_labels,
             inputs=self.context_fusion,
-            num_sampled=self.num_samples,
+            num_sampled=self.num_negative_examples,
             num_classes=self.vocabulary_size)
 
         # loss = tf.reduce_mean(losses, name='loss_mean')

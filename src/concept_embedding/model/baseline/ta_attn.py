@@ -10,8 +10,8 @@ from src.concept_embedding.model._context_fusion_ import exp_mask_for_high_rank
 # MCE (CBOW with Time Aware Attention)
 ##############################################################################
 class TaAttnModel(ModelTemplate):
-    def __init__(self,scope):
-        super(TaAttnModel, self).__init__(scope)
+    def __init__(self,scope, dataset):
+        super(TaAttnModel, self).__init__(scope, dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -68,7 +68,7 @@ class TaAttnModel(ModelTemplate):
             biases=nce_biases,
             labels=self.train_labels,
             inputs=self.context_fusion,
-            num_sampled=self.num_samples,
+            num_sampled=self.num_negative_examples,
             num_classes=self.vocabulary_size)
 
         # loss = tf.reduce_mean(losses, name='loss_mean')

@@ -27,7 +27,36 @@ class TesaNonDateModel(ModelTemplate):
         self.final_wgt_sim = None
         self.final_emb_sim = None
 
-        self.train_masks = None
+    #     self.train_masks = None
+    #
+    #     self.train_inputs = None #tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
+    #     self.train_masks = None #tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
+    #
+    #     self.train_labels = None #tf.compat.v1.placeholder(tf.int32, shape=[None, 1], name='train_labels')
+    #     self.valid_dataset = None #tf.constant(self.valid_samples, dtype=tf.int32, name='valid_samples')
+    #
+    #     # ------------ other ---------
+    #     self.output_class = None #3  # 0 for contradiction, 1 for neural and 2 for entailment
+    #     self.batch_size = None #tf.shape(self.train_inputs)[0]
+    #     self.code_len = None #tf.shape(self.train_inputs)[1]
+    #
+    #     # context codes
+    #     self.context_codes = None #self.train_inputs[:, :, 0]
+    #
+    #     # mask for padding codes are all 0, actual codes are 1
+    #     self.context_mask = None #tf.cast(self.context_codes, tf.bool)
+    #
+    #     # time interval between context code and label code
+    #     self.context_delta = None #self.train_inputs[:, :, 1]
+    #
+    #     #building model and other parts
+    #     self.context_fusion, self.code_embeddings = (None,None)
+    #     self.loss, self.optimizer, self.nce_weights = (None,None,None)
+    #     self.final_embeddings, self.final_weights = (None,None)
+    #     self.final_emb_sim, self.final_wgt_sim = (None,None)
+    #
+    # def initialize(self, cfg, dataset):
+    #     super().initialize(cfg,dataset)
 
         # ---- place holder -----
         self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
@@ -70,7 +99,7 @@ class TesaNonDateModel(ModelTemplate):
             biases=nce_biases,
             labels=self.train_labels,
             inputs=self.context_fusion,
-            num_sampled=self.num_samples,
+            num_sampled=self.num_negative_examples,
             num_classes=self.vocabulary_size)
 
         # loss = tf.reduce_mean(losses, name='loss_mean')

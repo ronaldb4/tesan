@@ -62,17 +62,17 @@ class ConceptEvaluation():
         nmi = metrics.normalized_mutual_info_score(dx_labels,kmeans.labels_)
         nmi_round = round(nmi, 4)
 
-        if self.verbose:
-            if ground_truth == 'ICD':
-                log_str = "number of dx_labels in ICD9: %s" % dx_uni_labels
-                self.logging.add(log_str)
-                log_str = "ICD, NMI Score:%s" % nmi_round
-                self.logging.add(log_str)
-            else:
-                log_str = "number of dx_labels in CCS: %s" % dx_uni_labels
-                self.logging.add(log_str)
-                log_str = "CCS, NMI Score:%s" % nmi_round
-                self.logging.add(log_str)
+        # if self.verbose:
+        #     if ground_truth == 'ICD':
+        #         log_str = "number of dx_labels in ICD9: %s" % dx_uni_labels
+        #         self.logging.add(log_str)
+        #         log_str = "ICD, NMI Score:%s" % nmi_round
+        #         self.logging.add(log_str)
+        #     else:
+        #         log_str = "number of dx_labels in CCS: %s" % dx_uni_labels
+        #         self.logging.add(log_str)
+        #         log_str = "CCS, NMI Score:%s" % nmi_round
+        #         self.logging.add(log_str)
 
         return nmi_round
 
@@ -103,12 +103,12 @@ class ConceptEvaluation():
                 total_precision += no_same_cat/actual_k
 
         evg_precision = round(total_precision/valid_size,4)
-        if self.verbose:
-            if ground_truth == 'ICD':
-                log_str = "ICD NNS P@%s Score:%s" % (self.top_k, evg_precision)
-            else:
-                log_str = "CCS NNS P@%s Score:%s" % (self.top_k, evg_precision)
-            self.logging.add(log_str)
+        # if self.verbose:
+        #     if ground_truth == 'ICD':
+        #         log_str = "ICD NNS P@%s Score:%s" % (self.top_k, evg_precision)
+        #     else:
+        #         log_str = "CCS NNS P@%s Score:%s" % (self.top_k, evg_precision)
+        #     self.logging.add(log_str)
 
         return evg_precision
 

@@ -34,7 +34,7 @@ class ModelTemplate(metaclass=ABCMeta):
         self.is_scale = cfg.is_scale                        # default=True, help='to scale the attention facts'
         self.activation = cfg.activation                    # default='relu', help='activation function'
         self.max_epoch = cfg.max_epoch                      # default=20, help='Max Epoch Number'
-        self.num_samples = cfg.num_samples                  # default=5, help='Number of negative examples to sample'
+        self.num_negative_examples = cfg.num_negative_examples                  # default=5, help='Number of negative examples to sample'
 
         #-----------------------------------------------
         # code Processing

@@ -23,6 +23,18 @@ class DatasetTemplate(metaclass=ABCMeta):
         self.patients = None
         self.patients_codes_file = None
 
+        self.data_source = None
+        self.is_sample = None
+        self.sample_rate = None
+        self.dx_only = None
+        self.min_freq = None
+        self.skip_window = None
+        self.batch_size = None
+        self.is_reduced_window = None
+        self.dataset_dir = None
+        self.visit_threshold = None
+        self.processed_path = None
+
     def initialize(self, dataConfig):
         self.data_source = dataConfig["data_source"]
         self.is_sample = dataConfig["sample_flag"]

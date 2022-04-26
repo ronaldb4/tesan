@@ -1,0 +1,37 @@
+{
+        "globals" : {
+                "mode": "train",
+                "task": "embedding",
+                "gpu": 0,
+                "gpu_mem": null,
+                "verbose": false,
+                "load_model": false
+        },
+        "evaluation": {
+              "max_epoch": 20,
+              "top_k": 1,
+              "valid_size":1000
+        },
+        "data": {
+                 "data_source":"mimic3"
+                ,"min_cut_freq":5
+                ,"visit_threshold":5
+                ,"train_batch_size":128
+                ,"skip_window":7
+
+                ,"sample_flag":true
+                ,"sample_rate":0.001
+                ,"only_dx_flag":true
+                ,"reduced_window":true
+                ,"num_steps":null
+                ,"is_date_encoding":false
+        },
+        "tesa" : {
+                 "num_negative_examples":5
+                ,"embedding_size":100
+
+                ,"activation":"relu"
+                ,"is_scale":true
+        }
+}
+

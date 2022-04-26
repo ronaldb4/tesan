@@ -11,8 +11,8 @@ class GraphHandler(object):
         self.writer = None
 
     def initialize(self, sess, cfg):
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
+        sess.run(tf.compat.v1.local_variables_initializer())
         if cfg.globals["load_model"]: #or cfg.mode != 'train_dann':
             self.restore(sess)
         if cfg.globals["mode"] == 'train':

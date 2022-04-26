@@ -12,8 +12,8 @@ from src.concept_embedding.model._context_fusion_ import multi_dimensional_atten
 # TeSAN - proposed model
 ##############################################################################
 class TeSANModel(ModelTemplate):
-    def __init__(self,scope):
-        super(TeSANModel, self).__init__(scope)
+    def __init__(self,scope, dataset):
+        super(TeSANModel, self).__init__(scope, dataset)
 
         # ------ start ------
         self.context_fusion = None
@@ -70,7 +70,7 @@ class TeSANModel(ModelTemplate):
             biases=nce_biases,
             labels=self.train_labels,
             inputs=self.context_fusion,
-            num_sampled=self.num_samples,
+            num_sampled=self.num_negative_examples,
             num_classes=self.vocabulary_size)
 
         # loss = tf.reduce_mean(losses, name='loss_mean')
