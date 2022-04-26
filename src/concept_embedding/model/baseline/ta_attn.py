@@ -58,7 +58,7 @@ class TaAttnModel(ModelTemplate):
         # Construct the variables for the NCE loss
         with tf.name_scope('weights'):
             nce_weights = tf.Variable(
-                tf.truncated_normal([self.vocabulary_size, self.embedding_size],
+                tf.random.truncated_normal([self.vocabulary_size, self.embedding_size],
                                     stddev=1.0 / math.sqrt(self.embedding_size)))
         with tf.name_scope('biases'):
             nce_biases = tf.Variable(tf.zeros([self.vocabulary_size]))
@@ -106,7 +106,7 @@ class TaAttnModel(ModelTemplate):
     def build_network(self):
         # Look up embeddings for inputs.
         with tf.name_scope('code_embeddings'):
-            init_code_embed = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
+            init_code_embed = tf.random.uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
@@ -116,7 +116,7 @@ class TaAttnModel(ModelTemplate):
 
 def time_aware_attention(train_inputs, embed, mask, embedding_size, k):
     with tf.compat.v1.variable_scope('time_aware_attention'):
-        attn_weights = tf.Variable(tf.truncated_normal([embedding_size, k], stddev=1.0 / math.sqrt(k)))
+        attn_weights = tf.Variable(tf.random.truncated_normal([embedding_size, k], stddev=1.0 / math.sqrt(k)))
         attn_biases = tf.Variable(tf.zeros([k]))
 
         # weight add bias

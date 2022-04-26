@@ -27,36 +27,6 @@ class TesaNonDateModel(ModelTemplate):
         self.final_wgt_sim = None
         self.final_emb_sim = None
 
-    #     self.train_masks = None
-    #
-    #     self.train_inputs = None #tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
-    #     self.train_masks = None #tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name='train_masks')
-    #
-    #     self.train_labels = None #tf.compat.v1.placeholder(tf.int32, shape=[None, 1], name='train_labels')
-    #     self.valid_dataset = None #tf.constant(self.valid_samples, dtype=tf.int32, name='valid_samples')
-    #
-    #     # ------------ other ---------
-    #     self.output_class = None #3  # 0 for contradiction, 1 for neural and 2 for entailment
-    #     self.batch_size = None #tf.shape(self.train_inputs)[0]
-    #     self.code_len = None #tf.shape(self.train_inputs)[1]
-    #
-    #     # context codes
-    #     self.context_codes = None #self.train_inputs[:, :, 0]
-    #
-    #     # mask for padding codes are all 0, actual codes are 1
-    #     self.context_mask = None #tf.cast(self.context_codes, tf.bool)
-    #
-    #     # time interval between context code and label code
-    #     self.context_delta = None #self.train_inputs[:, :, 1]
-    #
-    #     #building model and other parts
-    #     self.context_fusion, self.code_embeddings = (None,None)
-    #     self.loss, self.optimizer, self.nce_weights = (None,None,None)
-    #     self.final_embeddings, self.final_weights = (None,None)
-    #     self.final_emb_sim, self.final_wgt_sim = (None,None)
-    #
-    # def initialize(self, cfg, dataset):
-    #     super().initialize(cfg,dataset)
 
         # ---- place holder -----
         self.train_inputs = tf.compat.v1.placeholder(tf.int32, shape=[None, None, 2], name='train_inputs')
@@ -89,7 +59,7 @@ class TesaNonDateModel(ModelTemplate):
         # Construct the variables for the NCE loss
         with tf.name_scope('weights'):
             nce_weights = tf.Variable(
-                tf.truncated_normal([self.vocabulary_size, self.embedding_size],
+                tf.random.truncated_normal([self.vocabulary_size, self.embedding_size],
                                     stddev=1.0 / math.sqrt(self.embedding_size)))
         with tf.name_scope('biases'):
             nce_biases = tf.Variable(tf.zeros([self.vocabulary_size]))
@@ -138,7 +108,7 @@ class TesaNonDateModel(ModelTemplate):
     def build_network(self):
         # Look up embeddings for inputs.
         with tf.name_scope('code_embeddings'):
-            init_code_embed = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
+            init_code_embed = tf.random.uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
             code_embeddings = tf.Variable(init_code_embed)
             context_embed = tf.nn.embedding_lookup(code_embeddings, self.context_codes)
 
@@ -147,32 +117,32 @@ class TesaNonDateModel(ModelTemplate):
         ##############################################################################
         with tf.name_scope('tesa'):
             # Embedding size is calculated as shape(train_inputs) + shape(embeddings)[1:]
-            init_date_embed = tf.random_uniform([self.dates_size, self.embedding_size], -1.0, 1.0)
+            init_date_embed = tf.random.uniform([self.dates_size, self.embedding_size], -1.0, 1.0)
             date_embeddings = tf.Variable(init_date_embed)
 
             date_embed = tf.nn.embedding_lookup(date_embeddings, self.train_masks)
 
             # self_attention
             cntxt_embed = temporal_delta_sa_with_dense(rep_tensor=context_embed,
-                                                       rep_mask=self.context_mask,
-                                                       delta_tensor=date_embed,
-                                                       is_train=True,
-                                                       activation=self.activation,
-                                                       is_scale=self.is_scale)
+                                                      rep_mask=self.context_mask,
+                                                      delta_tensor=date_embed,
+                                                      is_train=True,
+                                                      activation=self.activation,
+                                                      is_scale=self.is_scale)
 
             # Attention pooling
             context_fusion = multi_dimensional_attention(cntxt_embed, self.context_mask, is_train=True)
         return context_fusion, code_embeddings
 
 def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
-                                     is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
+                                is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
 
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
     ivec = hn or ivec
     with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
-        attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
+        attn_mask = tf.cast(tf.linalg.tensor_diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
         # non-linear for context
         rep_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,
@@ -212,13 +182,13 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
         with tf.compat.v1.variable_scope('output'):
-            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
+            o_bias = tf.compat.v1.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
                 linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
                 o_bias)
-            output = fusion_gate * rep_map + (1-fusion_gate) * attn_result
-            output = mask_for_high_rank(output, rep_mask)# bs,sl,vec
+            output = fusion_gate * rep_map + (1 - fusion_gate) * attn_result
+            output = mask_for_high_rank(output, rep_mask)  # bs,sl,vec
 
         return output

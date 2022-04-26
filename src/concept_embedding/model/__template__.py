@@ -17,11 +17,17 @@ class ModelTemplate(metaclass=ABCMeta):
         self.opt = None
         self.train_op = None
 
-        self.valid_samples = cfg.evaluation["valid_examples"]             # list(range(1,self.valid_size+1))  # Only pick dev samples in the head of the distribution.
-        self.embedding_size = cfg.modelParams["embedding_size"]            # default=100, help='code embedding size'
-        self.activation = cfg.modelParams["activation"]                    # default='relu', help='activation function'
-        self.is_scale = cfg.modelParams["is_scale"]                        # default=True, help='to scale the attention facts'
-        self.num_negative_examples = cfg.modelParams["num_negative_examples"]                  # default=5, help='Number of negative examples to sample'
+        self.activation = None
+        self.is_scale = None
+
+        self.valid_samples = cfg.evaluation["valid_examples"]                   # list(range(1,self.valid_size+1))  # Only pick dev samples in the head of the distribution.
+        self.embedding_size = cfg.modelParams["embedding_size"]                 # default=100, help='code embedding size'
+        self.num_negative_examples = cfg.modelParams["num_negative_examples"]   # default=5, help='Number of negative examples to sample'
+
+        if "activation" in cfg.modelParams:
+            self.activation = cfg.modelParams["activation"]                    # default='relu', help='activation function'
+        if "is_scale" in cfg.modelParams:
+            self.is_scale = cfg.modelParams["is_scale"]                        # default=True, help='to scale the attention facts'
 
         #---------------------------------------------------------------------------------------------------------------
         #                                       parameters from dataset

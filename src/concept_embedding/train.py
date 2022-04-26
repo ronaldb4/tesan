@@ -30,7 +30,7 @@ logging.initialize(cfg)
 def train():
     num_steps = cfg.data["num_steps"]
 
-    if cfg.data["is_date_encoding"]:
+    if cfg.model == 'tesan':
         data_set = CDDataset()
         data_set.initialize(cfg.data)
         data_set.prepare_data()
@@ -54,21 +54,24 @@ def train():
     sess = tf.compat.v1.Session(config=graph_config)
 
     with tf.compat.v1.variable_scope('concept_embedding') as scope:
-        if cfg.model == 'tesa': #TeSAN - the proposed
-            if cfg.data["is_date_encoding"]:
-                model = TeSANModel(scope.name, data_set)
-            else:
-                model = TesaNonDateModel(scope.name, data_set)
+        if cfg.model == 'tesan': #TeSAN - the proposed
+            model = TeSANModel(scope.name, data_set)
 
-        elif cfg.model == 'delta':
+        #ablation models
+        elif cfg.model == 'tesa': #Multi_SA???? performance is inline
+            model = TesaNonDateModel(scope.name, data_set)
+        elif cfg.model == 'delta': #Interval
             model = DeltaModel(scope.name, data_set)
-        elif cfg.model == 'sa':
+        elif cfg.model == 'sa': #Multi_SA or Normal_SA
             model = SAModel(scope.name, data_set)
-        elif cfg.model == 'normal':
+        elif cfg.model == 'normal': #Normal_SA or something else
             model = NormalModel(scope.name, data_set)
 
+        #baseline models
         elif cfg.model == 'cbow':
             model = CBOWModel(scope.name, data_set)
+
+        # ????
         elif cfg.model == 'ta_attn':
             model = TaAttnModel(scope.name, data_set)
         elif cfg.model == 'fusion':
@@ -91,7 +94,7 @@ def train():
     total_duration = 0
     epoch_start = time.perf_counter()
     for batch in sample_batches:
-        if cfg.data["is_date_encoding"]:
+        if cfg.model == 'tesan':
             batch_num, current_epoch, current_batch = batch[2], batch[3], batch[4]
         else:
             batch_num, current_epoch, current_batch = batch[3], batch[4], batch[5]
@@ -115,7 +118,7 @@ def train():
             np.savetxt(join(cfg.saved_vect_dir, path), embeddings, delimiter=',')
             break
 
-        if cfg.data["is_date_encoding"]:
+        if cfg.model == 'tesan':
             feed_dict = {model.train_inputs: batch[0], model.train_labels: batch[1]}
         else:
             feed_dict = {model.train_inputs: batch[0], model.train_labels: batch[2], model.train_masks: batch[1]}
@@ -194,5 +197,3 @@ def main(_):
 
 if __name__ == '__main__':
     tf.compat.v1.app.run()
-    # --data_source mimic3 --model delta --gpu 2 --max_epoch 30 --num_steps 10000 --train_batch_size 64 --num_samples 10 --reduced_window True --skip_window 6 --verbose True --is_scale False --is_date_encoding False --task embedding
-# --data_source mimic3 --model sa --gpu 1 --max_epoch 30 --train_batch_size 64 --num_samples 10 --reduced_window True --skip_window 6 --verbose True --is_scale False --is_date_encoding False --task embedding --visit_threshold 1

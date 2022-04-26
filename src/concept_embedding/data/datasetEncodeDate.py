@@ -45,7 +45,6 @@ class ConceptAndDateDataset(ConceptDataset):
             json.dump(self.date_reverse_dict, fp)
 
     def process_data(self):
-
         batches = []
         for patient in self.patients:
             visits = patient['visits']
@@ -89,7 +88,7 @@ class ConceptAndDateDataset(ConceptDataset):
 
                 context_len = len(context_indices)
                 if context_len > 0:
-                    # if context length is less than two times of actual window, and padding
+                    # if context length is less than two times actual window, and padding
                     if context_len < 2 * actual_window:
                         for i in range(2 * actual_window - context_len):
                             context_indices.append([0, 0, 0])
@@ -116,7 +115,6 @@ class ConceptAndDateDataset(ConceptDataset):
         self.train_size = len(self.contexts)
 
     def generate_batch(self,num_steps=None):
-
         def data_queue():
             assert self.train_size >= self.batch_size
             data_ptr = 0
@@ -127,7 +125,9 @@ class ConceptAndDateDataset(ConceptDataset):
                 if data_ptr + self.batch_size <= self.train_size:
                     context = self.contexts[data_ptr:data_ptr + self.batch_size]
                     labels = self.labels[data_ptr:data_ptr + self.batch_size]
-                    yield np.array(context,dtype=np.int32),np.array(labels,dtype=np.int32), dataRound, idx_b
+                    yield np.array(context,dtype=np.int32),\
+                          np.array(labels,dtype=np.int32),\
+                          dataRound, idx_b
                     data_ptr += self.batch_size
                     idx_b += 1
                     step += 1
@@ -140,10 +140,14 @@ class ConceptAndDateDataset(ConceptDataset):
 
                     data_ptr = offset
                     dataRound += 1
-                    yield np.array(context,dtype=np.int32),np.array(labels,dtype=np.int32), dataRound, 0
+
+                    yield np.array(context,dtype=np.int32),\
+                          np.array(labels,dtype=np.int32),\
+                          dataRound, 0
                     idx_b = 1
                     step += 1
-                if num_steps is not None and  step >= num_steps:
+
+                if num_steps is not None and step >= num_steps:
                     break
 
         batch_num = math.ceil(self.train_size / self.batch_size)

@@ -24,22 +24,55 @@
                 ,"only_dx_flag":true
                 ,"reduced_window":true
                 ,"num_steps":null
-                ,"is_date_encoding":false
         },
         "models": {
+                "tesan" : {
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
                 "tesa" : {
                          "num_negative_examples":10
                         ,"embedding_size":100
-
                         ,"activation":"relu"
                         ,"is_scale":true
+                },
+                "delta" : {
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
+                "sa" : {
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
+                "normal" : {
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"activation":"relu"
                 },
                 "cbow" : {
                          "num_negative_examples":10
                         ,"embedding_size":100
+                },
 
+                "fusion" : {
+                        "THIS_MODEL_IS_BROKEN": true,
+                         "num_negative_examples":10
+                        ,"embedding_size":100
                         ,"activation":"relu"
-                        ,"is_scale":true
+                        ,"IS_THIS_NEEDED_is_scale":true
+                },
+                "ta_attn" : {
+                        "THIS_MODEL_IS_BROKEN": true,
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"IS_THIS_NEEDED_activation":"relu"
+                        ,"IS_THIS_NEEDED_is_scale":true
                 }
         }
 }

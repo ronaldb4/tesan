@@ -17,7 +17,7 @@ class GraphHandler(object):
             self.restore(sess)
         if cfg.globals["mode"] == 'train':
             print('cfg.summary_dir =',cfg.summary_dir)
-            self.writer = tf.compat.v1.summary.FileWriter(logdir=cfg.summary_dir, graph=tf.get_default_graph())
+            self.writer = tf.compat.v1.summary.FileWriter(logdir=cfg.summary_dir, graph=tf.compat.v1.get_default_graph())
         self.cfg = cfg
 
     def add_summary(self, summary, global_step):

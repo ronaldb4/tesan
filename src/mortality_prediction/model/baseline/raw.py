@@ -72,7 +72,7 @@ class RawModel(ModelTemplate):
             ##############################################################################
             # Raw - Baseline?? Method - simple one-hot encoding
             ##############################################################################
-            # init_code_embed = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
+            # init_code_embed = tf.random.uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
             # code_embeddings = tf.Variable(init_code_embed)
             init_code_embed = tf.one_hot(self.inputs, self.vocabulary_size,on_value=1.0, off_value=0.0,axis=-1)
             inputs_embed = bn_dense_layer(init_code_embed, self.embedding_size, True, 0.,

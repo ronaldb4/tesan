@@ -29,10 +29,10 @@ class ConceptDataset(DatasetTemplate):
             # actual window
             actual_window = self.skip_window - reduced_window
 
-            # concat all codes togeter for one patient, and the format is [code, date]
+            # concat all codes together for one patient, and the format is [code, date]
             for s_visit in selected_visits:
                 dt = datetime.datetime.strptime(s_visit['admsn_dt'], "%Y%m%d")
-                codes = s_visit['DXs']
+                codes = s_visit['DXs'] #diagnosis codes
                 if not self.dx_only:
                     codes.extend(s_visit['CPTs'])
                 for code in codes:
@@ -56,7 +56,7 @@ class ConceptDataset(DatasetTemplate):
 
                 context_len = len(context_indices)
                 if context_len > 0:
-                    # if context lenth is less than two times actual window, and padding
+                    # if context length is less than two times actual window, and padding
                     if context_len < 2 * actual_window:
                         for i in range(2 * actual_window - context_len):
                             context_indices.append([0, 0])
@@ -101,7 +101,6 @@ class ConceptDataset(DatasetTemplate):
         self.train_size = len(self.contexts)
 
     def generate_batch(self, num_steps=None):
-
         def data_queue():
             assert self.train_size >= self.batch_size
             data_ptr = 0
@@ -115,7 +114,8 @@ class ConceptDataset(DatasetTemplate):
                     labels = self.labels[data_ptr:data_ptr + self.batch_size]
                     yield np.array(context,dtype=np.int32),\
                           np.array(time_mask,dtype=np.int32),\
-                          np.array(labels,dtype=np.int32), dataRound, idx_b
+                          np.array(labels,dtype=np.int32),\
+                          dataRound, idx_b
                     data_ptr += self.batch_size
                     idx_b += 1
                     step += 1
@@ -133,7 +133,8 @@ class ConceptDataset(DatasetTemplate):
 
                     yield np.array(context,dtype=np.int32),\
                           np.array(time_mask,dtype=np.int32),\
-                          np.array(labels,dtype=np.int32), dataRound, 0
+                          np.array(labels,dtype=np.int32),\
+                          dataRound, 0
                     idx_b = 1
                     step += 1
 

@@ -58,8 +58,8 @@ class Configs(object):
 
         # self.processed_name = '_'.join([self.model, self.data_source, str(self.skip_window), self.task, self.task_type]) + '.pickle'
         processed_name = '_'.join([self.model, self.data["data_source"], str(self.data["skip_window"]), self.globals["task"]]) + '.pickle'
-        if self.data["is_date_encoding"]:
-            processed_name = '_'.join([self.model, self.data["data_source"],str(self.data["skip_window"]),'withDateEncoding'])+'.pickle'
+        # if self.data["is_date_encoding"]:
+        #     processed_name = '_'.join([self.model, self.data["data_source"],str(self.data["skip_window"]),'withDateEncoding'])+'.pickle'
         print(processed_name)
         self.data["processed_path"] = join(self.processed_task_dir, processed_name)
 
