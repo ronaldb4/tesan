@@ -131,7 +131,7 @@ def normal_attention(rep_tensor, rep_mask,keep_prob=1., is_train=None, wd=0., ac
     ivec = rep_tensor.get_shape().as_list()[2]
     with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
-        attn_mask = tf.cast(tf.diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
+        attn_mask = tf.cast(tf.linalg.tensor_diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
 
         # non-linear for context
         rep_map = bn_dense_layer(rep_tensor, ivec, True, 0., 'bn_dense_map', activation,

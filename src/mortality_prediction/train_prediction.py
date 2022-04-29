@@ -13,10 +13,11 @@ from src.mortality_prediction.model.baseline.med2vec import Med2VecModel
 from src.mortality_prediction.model.baseline.sg import SGModel
 from src.mortality_prediction.model.baseline.raw import RawModel
 from src.mortality_prediction.model.ablation.tesa import TesaModel
+from src.mortality_prediction.model.proposed.tesan import TeSANModel
 from src.mortality_prediction.model.ablation.delta import DeltaModel
 from src.mortality_prediction.model.ablation.sa import SAModel
 from src.mortality_prediction.model.ablation.normal import NormalModel
-from src.concept_embedding.configs import cfg
+from src.mortality_prediction.configs import cfg
 
 from src.utils.graph_handler import GraphHandler
 from src.utils.record_log import RecordLog
@@ -28,20 +29,22 @@ logging = RecordLog()
 logging.initialize(cfg)
 
 
-def train():
+def predict():
 
-    if cfg.gpu_mem is None:
-        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem, allow_growth=True)
+    if cfg.globals["gpu_mem"] is None:
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.globals["gpu_mem"], allow_growth=True)
         graph_config = tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
 
     else:
-        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.gpu_mem)
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.globals["gpu_mem"])
         graph_config = tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True)
 
-    visit_threshold = 1
-    num_steps = cfg.num_steps
-    data_set = MortalityDataset()
-    data_set.prepare_data(visit_threshold)
+                            ########################################################
+    visit_threshold = 1     # this is mildly interesting - or not
+                            ########################################################
+    num_steps = cfg.evaluation["num_steps"]
+    data_set = MortalityDataset(cfg.data, visit_threshold)
+    data_set.prepare_data()
     data_set.build_dictionary()
     data_set.load_data()
     sample_batches = data_set.generate_batch(num_steps)
@@ -55,53 +58,58 @@ def train():
 
     sess = tf.compat.v1.Session(config=graph_config)
     with tf.compat.v1.variable_scope('mortality_prediction') as scope:
-        if cfg.model_type == 'raw':
-            model = RawModel(scope.name, data_set)
-        elif cfg.model_type == 'tesa':
+        if cfg.model == 'raw':
+            model = RawModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'tesan':
             ##############################################################################
             # TeSAN - proposed model
             ##############################################################################
-            model = TesaModel(scope.name, data_set)
-        elif cfg.model_type == 'delta':
+            model = TeSANModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'tesa':
+            ##############################################################################
+            # TeSAN - proposed model
+            ##############################################################################
+            model = TesaModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'delta':
             ##############################################################################
             # Interval - Ablation Studies
             ##############################################################################
-            model = DeltaModel(scope.name, data_set)
-        elif cfg.model_type == 'sa':
+            model = DeltaModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'sa':
             ##############################################################################
             # Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
             ##############################################################################
-            model = SAModel(scope.name, data_set)
-        elif cfg.model_type == 'normal':
+            model = SAModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'normal':
             ##############################################################################
             # Normal_Sa - Ablation Studies
             ##############################################################################
-            model = NormalModel(scope.name, data_set)
-        elif cfg.model_type == 'cbow':
+            model = NormalModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'cbow':
             ##############################################################################
             # CBOW - Baseline Method
             ##############################################################################
-            model = CBOWModel(scope.name, data_set)
-        elif cfg.model_type == 'sg':
+            model = CBOWModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'sg':
             ##############################################################################
             # Skip-gram - Baseline Method
             ##############################################################################
-            model = SGModel(scope.name, data_set)
-        elif cfg.model_type == 'mce':
+            model = SGModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'mce':
             ##############################################################################
             # MCE - Baseline Method  (CBOW variant)
             ##############################################################################
-            model = MCEModel(scope.name, data_set)
-        elif cfg.model_type == 'glove':
+            model = MCEModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'glove':
             ##############################################################################
             # GloVe - Baseline Method
             ##############################################################################
-            model = GloveModel(scope.name, data_set)
+            model = GloveModel(scope.name, data_set, cfg.modelParams)
         else:
             ##############################################################################
             # med2vec - Baseline Method
             ##############################################################################
-            model = Med2VecModel(scope.name, data_set)
+            model = Med2VecModel(scope.name, data_set, cfg.modelParams)
 
     graph_handler = GraphHandler(model, logging)
     graph_handler.initialize(sess,cfg)
@@ -110,10 +118,9 @@ def train():
     global_steps = 0
     total_loss = 0
     logging.add()
-    logging.add('Begin training...')
+    logging.add('Begin predicting...')
 
     for batch in sample_batches:
-
         feed_dict = {model.inputs: batch[0], model.labels: batch[1]}
         _, loss_val = sess.run([model.optimizer, model.loss], feed_dict=feed_dict)
         total_loss += loss_val
@@ -161,62 +168,62 @@ def train():
 
     placehold = np.delete(placehold, 0, 0)
     print('placehold shape:', placehold.shape)
-    path = cfg.data_source + '_model_' + cfg.model + '_'+str(num_steps)+'.patient.vect'
+    path = cfg.data["data_source"] + '_model_' + cfg.model + '_'+str(num_steps)+'.patient.vect'
     np.savetxt(join(cfg.saved_vect_dir, path), placehold, delimiter=',')
     logging.done()
 
 
-def test():
-    pass
+def log_config():
+    logging.add()
+    logging.add('execution config')
+    for key,value in cfg.globals.items():
+        logging.add('\t%s: %s' % (key, value))
+
+    logging.add()
+    logging.add('data config')
+    for key,value in cfg.data.items():
+        logging.add('\t%s: %s' % (key, value))
+
+    # logging.add()
+    # logging.add('evaluation config')
+    # for key,value in cfg.evaluation.items():
+    #     logging.add('\t%s: %s' % (key, value))
+
+    logging.add(cfg.model, ' config')
+    for key,value in cfg.modelParams.items():
+        logging.add('\t%s: %s' % (key, value))
+
+
+def metric_pred(y_true, probs, y_pred):
+    [[TN, FP], [FN, TP]] = confusion_matrix(y_true, y_pred, labels=[0, 1]).astype(float)
+    # print(TN, FP, FN, TP)
+    accuracy = (TP + TN) / (TP + TN + FP + FN)
+    specificity = TN / (FP + TN)
+    precision = TP / (TP + FP)
+    sensitivity = recall = TP / (TP + FN)
+    f_score = 2 * TP / (2 * TP + FP + FN)
+
+    # calculate AUC
+    # roc_auc = roc_auc_score(y_true, probs)
+    # print('roc_auc: %.4f' % roc_auc)
+    # calculate roc curve
+    # fpr, tpr, thresholds = roc_curve(y_true, probs)
+
+    # calculate precision-recall curve
+    precision_curve, recall_curve, thresholds = precision_recall_curve(y_true, probs)
+
+    # calculate F1 score
+    f1 = f1_score(y_true, y_pred)
+    # calculate precision-recall AUC
+    pr_auc = auc(recall_curve, precision_curve)
+
+    return [accuracy, precision, sensitivity, specificity, f_score, pr_auc, f1]
+
+    # return [accuracy, precision, sensitivity, specificity, f_score, roc_auc, pr_auc, f1]
 
 
 def main(_):
-    cfg.task = 'prediction'
-    if cfg.mode == 'train':
-        train()
-    elif cfg.mode == 'test':
-        test()
-    else:
-        raise RuntimeError('no running mode named as %s' % cfg.mode)
-
-
-def output_model_params():
-    logging.add()
-    logging.add('==>model_title: ' + cfg.model_name[1:])
-    logging.add()
-    for key,value in cfg.args.__dict__.items():
-        if key not in ['test','shuffle']:
-            logging.add('%s: %s' % (key, value))
-
+    predict()
 
 if __name__ == '__main__':
     tf.compat.v1.app.run()
-
-
-
-    def metric_pred(y_true, probs, y_pred):
-        [[TN, FP], [FN, TP]] = confusion_matrix(y_true, y_pred, labels=[0, 1]).astype(float)
-        # print(TN, FP, FN, TP)
-        accuracy = (TP + TN) / (TP + TN + FP + FN)
-        specificity = TN / (FP + TN)
-        precision = TP / (TP + FP)
-        sensitivity = recall = TP / (TP + FN)
-        f_score = 2 * TP / (2 * TP + FP + FN)
-
-        # calculate AUC
-        # roc_auc = roc_auc_score(y_true, probs)
-        # print('roc_auc: %.4f' % roc_auc)
-        # calculate roc curve
-        # fpr, tpr, thresholds = roc_curve(y_true, probs)
-
-        # calculate precision-recall curve
-        precision_curve, recall_curve, thresholds = precision_recall_curve(y_true, probs)
-
-        # calculate F1 score
-        f1 = f1_score(y_true, y_pred)
-        # calculate precision-recall AUC
-        pr_auc = auc(recall_curve, precision_curve)
-
-        return [accuracy, precision, sensitivity, specificity, f_score, pr_auc, f1]
-
-        # return [accuracy, precision, sensitivity, specificity, f_score, roc_auc, pr_auc, f1]

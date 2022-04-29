@@ -4,14 +4,13 @@ import numpy as np
 from src.nn_utils.general import mask_for_high_rank
 from src.nn_utils.nn import bn_dense_layer
 from src.mortality_prediction.model._dynamic_rnn_ import dynamic_rnn
-from src.concept_embedding.configs import cfg
 from src.mortality_prediction.model.__template__ import ModelTemplate
 from src.mortality_prediction.data.datafile_util import fullpath
 
 
 class CBOWModel(ModelTemplate):
-    def __init__(self,scope, dataset):
-        super(CBOWModel, self).__init__(scope, dataset)
+    def __init__(self,scope, dataset, modelParams):
+        super(CBOWModel, self).__init__(scope, modelParams)
         # ------ start ------
         self.max_visits = dataset.max_visits
         self.max_len_visit = dataset.max_len_visit
@@ -74,7 +73,7 @@ class CBOWModel(ModelTemplate):
            ##############################################################################
             # CBOW - Baseline Method
             ##############################################################################
-            cbow_file = fullpath('outputs/concept_embedding/cbow/vects/mimic3_model_cbow_epoch_10_sk_6.vect')
+            cbow_file = fullpath(self.vect_file)
             origin_weights = np.loadtxt(cbow_file, delimiter=",")
 
             weights = []
@@ -105,7 +104,7 @@ class CBOWModel(ModelTemplate):
             # pg 505: All models were trained with 50,00 steps;
             # the batch size is 128 and the RNN cell type is GRU.
             # ############################################################
-            cell = tf.contrib.rnn.GRUCell(cfg.hn, reuse=reuse)
+            cell = tf.contrib.rnn.GRUCell(self.hidden_units, reuse=reuse)
 
             outputs, final_state = dynamic_rnn(cell, inputs_reduced, tensor_len, dtype=tf.float32)
         return outputs, final_state, tensor_len
