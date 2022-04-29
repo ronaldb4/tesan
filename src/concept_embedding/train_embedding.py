@@ -2,6 +2,7 @@ import time
 import tensorflow as tf
 import numpy as np
 import pandas as pd
+import resource
 from os.path import join
 
 from src.concept_embedding.configs import cfg
@@ -173,25 +174,6 @@ def log_config():
         logging.add('\t%s: %s' % (key, value))
 
 def main(_):
-    logging.add()
-    logging.add('execution config')
-    for key, value in cfg.globals.items():
-        logging.add('\t%s: %s' % (key, value))
-
-    logging.add()
-    logging.add('data config')
-    for key, value in cfg.data.items():
-        logging.add('\t%s: %s' % (key, value))
-
-    logging.add()
-    logging.add('evaluation config')
-    for key, value in cfg.evaluation.items():
-        logging.add('\t%s: %s' % (key, value))
-
-    logging.add(cfg.model, ' config')
-    for key, value in cfg.modelParams.items():
-        logging.add('\t%s: %s' % (key, value))
-
     train()
 
 
