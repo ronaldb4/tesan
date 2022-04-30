@@ -95,7 +95,6 @@ def train():
     logging.add('Begin training...')
     sample_batches = data_set.generate_batch(num_steps)
 
-    total_duration = 0
     total_cpu = 0
     memory_usage = []
     if cfg.globals["verbose"]:
@@ -103,7 +102,6 @@ def train():
         "epoch", cfg.evaluation["top_k"], cfg.evaluation["top_k"])
         logging.add(header)
 
-    epoch_start = time.perf_counter()
     for batch in sample_batches:
         if cfg.model == 'tesan':
             batch_num, current_epoch, current_batch = batch[2], batch[3], batch[4]
@@ -113,14 +111,12 @@ def train():
         if tmp_epoch != current_epoch:
             epoch_end = time.perf_counter()
             epoch_loss /= tmp_cur_batch
-            cpu_time, memory_used = print_eval(tmp_epoch, epoch_loss, evaluator,sess, (epoch_end - epoch_start), process)
+            cpu_time, memory_used = print_eval(tmp_epoch, epoch_loss, evaluator,sess, process)
             total_cpu = cpu_time
             memory_usage.append(memory_used)
 
-            total_duration += (epoch_end - epoch_start)
             epoch_loss = 0
             tmp_epoch = current_epoch
-            epoch_start = time.perf_counter()
         else:
             tmp_cur_batch = current_batch
 
@@ -140,16 +136,13 @@ def train():
         _, loss_val = sess.run([model.optimizer, model.loss], feed_dict=feed_dict)
         epoch_loss += loss_val
 
-    log_str = "\tTarget\t\t 32.84%\t 58.33%\t 66.10%\t 43.80%"
-    logging.add(log_str)
-
     logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
     logging.add('avg mem: % 7.2f' % sum(memory_usage/1024/1024)/len(memory_usage))
     logging.add('max mem: % 7.2f' % max(memory_usage/1024/1024))
 
     logging.done()
 
-def print_eval(stage, loss, evaluator, sess, duration_ns, process):
+def print_eval(stage, loss, evaluator, sess, process):
     icd_weigh_scores = evaluator.get_clustering_nmi(sess, 'ICD')
     ccs_weigh_scores = evaluator.get_clustering_nmi(sess, 'CCS')
 
