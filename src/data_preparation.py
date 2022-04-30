@@ -1,5 +1,6 @@
 import glob
 import os
+import argparse
 
 import pandas as pd
 import json
@@ -141,20 +142,29 @@ def processing_mimic3(file_adm, file_dxx, file_txx, file_drug, file_drg, output_
 
 if __name__ == "__main__":
     print(os.getcwd())
-    mimic_flag = False
+    # mimic_flag = False
+    parser = argparse.ArgumentParser()
+    parser.register('type', 'bool', (lambda x: x.lower() in ('True', "yes", "true", "t", "1")))
+    parser.add_argument('--data_source', type=str, default='cms', help='mimic or cms')
+    args = parser.parse_args()
 
-    if mimic_flag:
-        file_adm = '../dataset/mimic3/ADMISSIONS.csv'
-        file_dxx = '../dataset/mimic3/DIAGNOSES_ICD.csv'
-        file_txx = '../dataset/mimic3/PROCEDURES_ICD.csv'
-        file_drug = '../dataset/mimic3/PRESCRIPTIONS.csv'
-        file_drg = '../dataset/mimic3/DRGCODES.csv'
+    if args.data_source == 'mimic':
+        print('processing mimic3 data ...')
+        # file_adm = '../dataset/mimic3/ADMISSIONS.csv'
+        # file_dxx = '../dataset/mimic3/DIAGNOSES_ICD.csv'
+        # file_txx = '../dataset/mimic3/PROCEDURES_ICD.csv'
+        # file_drug = '../dataset/mimic3/PRESCRIPTIONS.csv'
+        # file_drg = '../dataset/mimic3/DRGCODES.csv'
+        #
+        # output_file = '../dataset/processed/patients_mimic3_full.json'
+        #
+        # processing_mimic3(file_adm, file_dxx, file_txx, file_drug, file_drg, output_file)
 
-        output_file = '../dataset/processed/patients_mimic3_full.json'
-
-        processing_mimic3(file_adm, file_dxx, file_txx, file_drug, file_drg, output_file)
+    elif args.data_source == 'cms':
+        print('processing cms data ... ')
+        files_path = '../dataset/cms'
+        output_file = '../dataset/processed/patients_cms_full.json'
+        processing_cms(files_path, output_file)
 
     else:
-        files_path = '../../dataset/cms'
-        output_file = '../../dataset/processed/patients_cms_full.json'
-        processing_cms(files_path, output_file)
+        print('invalid data_source:', args.data_source)

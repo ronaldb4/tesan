@@ -4,7 +4,7 @@
                 "task": "embedding",
                 "gpu": 0,
                 "gpu_mem": null,
-                "verbose": false,
+                "verbose": true,
                 "load_model": false
         },
         "evaluation": {
@@ -13,7 +13,7 @@
               "valid_size":1000
         },
         "data": {
-                 "data_source":"mimic3"
+                 "data_source":"cms"
                 ,"min_cut_freq":5
                 ,"visit_threshold":5
                 ,"train_batch_size":128
@@ -24,14 +24,56 @@
                 ,"only_dx_flag":true
                 ,"reduced_window":true
                 ,"num_steps":null
-                ,"is_date_encoding":false
         },
-        "tesa" : {
-                 "num_negative_examples":5
-                ,"embedding_size":100
+        "models": {
+                "tesan" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
+                "tesa" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
+                "delta" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
+                "sa" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+                },
+                "normal" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                },
+                "cbow" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                },
 
-                ,"activation":"relu"
-                ,"is_scale":true
+                "fusion" : {
+                        "THIS_MODEL_IS_BROKEN": true,
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"IS_THIS_NEEDED_is_scale":true
+                },
+                "ta_attn" : {
+                        "THIS_MODEL_IS_BROKEN": true,
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"IS_THIS_NEEDED_activation":"relu"
+                        ,"IS_THIS_NEEDED_is_scale":true
+                }
         }
 }
 

@@ -29,7 +29,7 @@ logging = RecordLog()
 logging.initialize(cfg)
 
 
-def predict():
+def train():
 
     if cfg.globals["gpu_mem"] is None:
         gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.globals["gpu_mem"], allow_growth=True)
@@ -223,7 +223,7 @@ def metric_pred(y_true, probs, y_pred):
 
 
 def main(_):
-    predict()
+    train()
 
 if __name__ == '__main__':
     tf.compat.v1.app.run()
