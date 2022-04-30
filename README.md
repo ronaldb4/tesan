@@ -1,4 +1,4 @@
-##Introduction
+## Introduction
 
 This project is principally a refactoring of the code found at 
 https://github.com/Xueping/tesan. This code was provided 
@@ -10,7 +10,7 @@ temporal aspect of medical data (visits and their diagnoses, procedures). The go
 this new method is to produced improved embeddings for building machine learning algorithms.
 
 
-##This Project
+## This Project
 The goal of the refactor is to make clearer the purposes and difference between the 
 assorted models presented in the paper.
 
