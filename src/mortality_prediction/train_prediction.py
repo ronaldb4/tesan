@@ -1,3 +1,4 @@
+import datetime
 import os
 import time
 import tensorflow as tf
@@ -128,6 +129,8 @@ def train():
         header = "\tStep\tAccuracy\tPrecision\tSensitivity\tSpecificity\tF-score\tPR_AUC\tF1\tCPU\tMemory"
         logging.add(header)
 
+    total_cpu = 0
+    memory_usage = []
     for batch in sample_batches:
         feed_dict = {model.inputs: batch[0], model.labels: batch[1]}
         _, loss_val = sess.run([model.optimizer, model.loss], feed_dict=feed_dict)
@@ -149,6 +152,8 @@ def train():
 
             cpu_time = process.cpu_times().user + psutil.cpu_times().system
             memory_used = process.memory_info().vms
+            total_cpu = cpu_time
+            memory_usage.append(memory_used)
 
             metrics = metric_pred(data_set.test_labels, props, yhat)
 
@@ -161,6 +166,10 @@ def train():
             else:
                 log_str = "metrics: %s %s %s" % (metrics, cpu_time, memory_used)
                 logging.add(log_str)
+
+    logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
+    logging.add('avg mem: % 7.2f' % sum(memory_usage/1024/1024)/len(memory_usage))
+    logging.add('max mem: % 7.2f' % max(memory_usage/1024/1024))
 
     # # save patient vectors
     placehold = np.zeros((1, 100))

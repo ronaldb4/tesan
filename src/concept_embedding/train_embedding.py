@@ -1,3 +1,4 @@
+import datetime
 import os
 import time
 import tensorflow as tf
@@ -142,9 +143,9 @@ def train():
     log_str = "\tTarget\t\t 32.84%\t 58.33%\t 66.10%\t 43.80%"
     logging.add(log_str)
 
-    logging.add('total cpu: %' % total_cpu)
-    logging.add('avg mem: %' % sum(memory_usage/1024/1024)/cfg.evaluation["max_epoch"])
-    logging.add('max mem: %' % max(memory_usage/1024/1024))
+    logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
+    logging.add('avg mem: % 7.2f' % sum(memory_usage/1024/1024)/len(memory_usage))
+    logging.add('max mem: % 7.2f' % max(memory_usage/1024/1024))
 
     logging.done()
 
