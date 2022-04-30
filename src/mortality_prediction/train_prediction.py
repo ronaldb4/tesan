@@ -1,6 +1,9 @@
+import os
+import time
 import tensorflow as tf
 import numpy as np
 from os.path import join
+import psutil
 
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
@@ -30,6 +33,7 @@ logging.initialize(cfg)
 
 
 def train():
+    process = psutil.Process(os.getpid())
 
     if cfg.globals["gpu_mem"] is None:
         gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=cfg.globals["gpu_mem"], allow_growth=True)
@@ -120,6 +124,10 @@ def train():
     logging.add()
     logging.add('Begin predicting...')
 
+    if cfg.globals["verbose"]:
+        header = "\tStep\tAccuracy\tPrecision\tSensitivity\tSpecificity\tF-score\tPR_AUC\tF1\tCPU\tMemory"
+        logging.add(header)
+
     for batch in sample_batches:
         feed_dict = {model.inputs: batch[0], model.labels: batch[1]}
         _, loss_val = sess.run([model.optimizer, model.loss], feed_dict=feed_dict)
@@ -139,24 +147,20 @@ def train():
             logging.add(log_str)
             logging.add('validating more metrics.....')
 
-            metrics = metric_pred(data_set.test_labels, props, yhat)
-            log_str = "metrics: %s" % metrics
-            logging.add(log_str)
+            cpu_time = process.cpu_times().user + psutil.cpu_times().system
+            memory_used = process.memory_info().vms
 
-            # save patient vectors
-            # placehold = np.zeros((1, 100))
-            # for batch in all_batches:
-            #     feed_dict = {model.inputs: batch[0], model.labels: batch[1]}
-            #     pat_embedding = sess.run(model.output, feed_dict=feed_dict)
-            #     # print('pat_embedding shape:', pat_embedding.shape)
-            #     placehold = np.append(placehold, pat_embedding, axis=0)
-            #
-            # placehold = np.delete(placehold, 0, 0)
-            # print('placehold shape:', placehold.shape)
-            # path = cfg.data_source + '_model_' + cfg.model +'_'+ str(global_steps) + '.patient.vect'
-            # np.savetxt(join(cfg.saved_vect_dir, path), placehold, delimiter=',')
-            # # placehold = np.zeros((1, 100))
-            # # del placehold
+            metrics = metric_pred(data_set.test_labels, props, yhat)
+
+            if cfg.globals["verbose"]:
+                #accuracy, precision, sensitivity, specificity, f_score, pr_auc, f1
+                log_str = "% 6d\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 7.2f\t% 7.2f" % \
+                          (global_steps, metrics[0]*100, metrics[1], metrics[2], metrics[3], metrics[4], metrics[5], metrics[6],
+                           cpu_time, memory_used / 1024 / 1024)
+                logging.add(log_str)
+            else:
+                log_str = "metrics: %s %s %s" % (metrics, cpu_time, memory_used)
+                logging.add(log_str)
 
     # # save patient vectors
     placehold = np.zeros((1, 100))
@@ -184,10 +188,10 @@ def log_config():
     for key,value in cfg.data.items():
         logging.add('\t%s: %s' % (key, value))
 
-    # logging.add()
-    # logging.add('evaluation config')
-    # for key,value in cfg.evaluation.items():
-    #     logging.add('\t%s: %s' % (key, value))
+    logging.add()
+    logging.add('evaluation config')
+    for key,value in cfg.evaluation.items():
+        logging.add('\t%s: %s' % (key, value))
 
     logging.add(cfg.model, ' config')
     for key,value in cfg.modelParams.items():

@@ -9,11 +9,12 @@ class GraphHandler(object):
         self.logging = logging
         self.saver = tf.compat.v1.train.Saver(max_to_keep=3)
         self.writer = None
+        self.cfg = None
 
     def initialize(self, sess, cfg):
         sess.run(tf.compat.v1.global_variables_initializer())
         sess.run(tf.compat.v1.local_variables_initializer())
-        if cfg.globals["load_model"]: #or cfg.mode != 'train_dann':
+        if cfg.globals["load_model"]:
             self.restore(sess)
         if cfg.globals["mode"] == 'train':
             print('cfg.summary_dir =',cfg.summary_dir)
