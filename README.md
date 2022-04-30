@@ -7,7 +7,8 @@ authored by Xueping Peng; Guodong Long; Tao Shen; Sen Wang; Jing Jiang; Michael 
 
 The purpose of the paper is to present a new embedding method that accommodates the 
 temporal aspect of medical data (visits and their diagnoses, procedures). The goal of
-this new method is to produced improved embeddings for building machine learning algorithms.
+this new method is to produced improved embeddings for building machine learning 
+algorithms for health care applications.
 
 
 ## This Project
