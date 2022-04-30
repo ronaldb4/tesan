@@ -63,7 +63,7 @@ options are:
 | tesa | TeSA |
 
 The **configSet** parameter specifies the JSON file to be used (examples are provided). This file specifies the 
-hyper-parameters define the behavior of the both the model and the treatment of the data.
+hyper-parameters that define the behavior of the both the model and the treatment of the data.
 
 To generate the mortality prediction models, the **train_prediction.py** file in 
 **src/mortaility_prediction** should be executed. It supports and requires the same
