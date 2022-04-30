@@ -35,8 +35,8 @@ Of the nine (9) models discussed in the paper, the original code provides for ex
 In addition to these models, the original code also specifies three (3) additional models:
 - TeSA
 - TA_attn
-- Fusion 
-- 
+- Fusion
+
 These additional models are represented in the refactor, however (with the exception of TeSA) they have not been tested/executed.
 
 Beyond generating embeddings, the original code provides for creating mortality 
