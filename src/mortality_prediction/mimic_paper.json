@@ -1,0 +1,67 @@
+{
+        "globals" : {
+                "mode": "train",
+                "task": "prediction",
+                "gpu": 0,
+                "gpu_mem": null,
+                "verbose": true,
+                "load_model": false
+        },
+        "evaluation": {
+              "num_steps": 50000
+        },
+        "data": {
+                 "data_source":"mimic3"
+                ,"min_cut_freq":5
+                ,"visit_threshold":1
+                ,"train_batch_size":64
+                ,"skip_window":6
+
+                ,"sample_flag":true
+                ,"sample_rate":0.001
+                ,"only_dx_flag":true
+                ,"reduced_window":true
+        },
+        "models": {
+                "tesan" : {
+                         "vect_file":"outputs/concept_embedding/tasks/embedding/tesan/vects/mimic3_model_tesan_epoch_30_sk_6.vect"
+                        ,"hidden_units": 100
+                },
+                "tesa" : {
+                         "vect_file":"outputs/concept_embedding/tasks/embedding/tesa/vects/mimic3_model_tesa_epoch_30_sk_6.vect"
+                        ,"hidden_units": 100
+                },
+                "delta" : {
+                         "vect_file":"outputs/concept_embedding/tasks/embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect"
+                        ,"hidden_units": 100
+                },
+                "sa" : {
+                         "vect_file":"outputs/concept_embedding/tasks/embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect"
+                        ,"hidden_units": 100
+                },
+                "normal" : {
+                         "vect_file":"outputs/concept_embedding/tasks/embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect"
+                        ,"hidden_units": 100
+                },
+                "cbow" : {
+                         "vect_file":"outputs/concept_embedding/tasks/embedding/cbow/vects/mimic3_model_cbow_epoch_30_sk_6.vect"
+                        ,"hidden_units": 100
+                },
+
+                "fusion" : {
+                        "THIS_MODEL_IS_BROKEN": true,
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"IS_THIS_NEEDED_is_scale":true
+                },
+                "ta_attn" : {
+                        "THIS_MODEL_IS_BROKEN": true,
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"IS_THIS_NEEDED_activation":"relu"
+                        ,"IS_THIS_NEEDED_is_scale":true
+                }
+        }
+}
+
