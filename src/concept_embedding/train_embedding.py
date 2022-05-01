@@ -98,7 +98,7 @@ def train():
     total_cpu = 0
     memory_usage = []
     if cfg.globals["verbose"]:
-        header = "\t%s\tLoss\tNMI ICD\tNMI CCS\tNNS P@%s Score ICD\tNNS P@%s Score CCS\tDuration\tCPU\tMemory" % (
+        header = "\t%s\tLoss\tNMI ICD\tNMI CCS\tNNS P@%s Score ICD\tNNS P@%s Score CCS\tDuration\tCPU (sec)\tMemory (MB)" % (
         "epoch", cfg.evaluation["top_k"], cfg.evaluation["top_k"])
         logging.add(header)
 
@@ -114,6 +114,8 @@ def train():
             cpu_time, memory_used = print_eval(tmp_epoch, epoch_loss, evaluator,sess, process)
             total_cpu = cpu_time
             memory_usage.append(memory_used)
+            print('avg mem: % 7.2f (MB)' % ((sum(memory_usage) / 1024 / 1024) / len(memory_usage)))
+            print('max mem: % 7.2f (MB)' % ((max(memory_usage) / 1024 / 1024)))
             epoch_loss = 0
             tmp_epoch = current_epoch
         else:
@@ -136,8 +138,8 @@ def train():
         epoch_loss += loss_val
 
     logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
-    logging.add('avg mem: % 7.2f' % (sum(memory_usage)/1024/1024)/len(memory_usage))
-    logging.add('max mem: % 7.2f' % (max(memory_usage)/1024/1024))
+    logging.add('avg mem: % 7.2f (MB)' % ((sum(memory_usage)/1024/1024)/len(memory_usage)))
+    logging.add('max mem: % 7.2f (MB)' % ((max(memory_usage)/1024/1024)))
 
     logging.done()
 
