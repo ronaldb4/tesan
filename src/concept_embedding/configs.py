@@ -14,8 +14,8 @@ class Configs(object):
         parser = argparse.ArgumentParser()
         parser.register('type', 'bool', (lambda x: x.lower() in ('True', "yes", "true", "t", "1")))
 
-        parser.add_argument('--model', type=str, default='tesa', help='tesa, vanila_sa, or cbow')
-        parser.add_argument('--configSet', type=str, default='mimic_paper.json', help='tesa, vanila_sa, or cbow')
+        parser.add_argument('--model', type=str, default='tesa', help='tesan, cbow, normal, sa, delta, tesa')
+        parser.add_argument('--configSet', type=str, default='mimic_paper.json', help='.json file containing configSet')
 
         parser.set_defaults(shuffle=True)
         self.args = parser.parse_args()

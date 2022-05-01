@@ -1,9 +1,10 @@
+import datetime
+import os
 import time
 import tensorflow as tf
 import numpy as np
-import pandas as pd
-import resource
 from os.path import join
+import psutil
 
 from src.concept_embedding.configs import cfg
 
@@ -29,6 +30,8 @@ logging = RecordLog()
 logging.initialize(cfg)
 
 def train():
+    process = psutil.Process(os.getpid())
+
     num_steps = cfg.data["num_steps"]
 
     if cfg.model == 'tesan':
@@ -92,8 +95,13 @@ def train():
     logging.add('Begin training...')
     sample_batches = data_set.generate_batch(num_steps)
 
-    total_duration = 0
-    epoch_start = time.perf_counter()
+    total_cpu = 0
+    memory_usage = []
+    if cfg.globals["verbose"]:
+        header = "\t%s\tLoss\tNMI ICD\tNMI CCS\tNNS P@%s Score ICD\tNNS P@%s Score CCS\tDuration\tCPU (sec)\tMemory (MB)" % (
+        "epoch", cfg.evaluation["top_k"], cfg.evaluation["top_k"])
+        logging.add(header)
+
     for batch in sample_batches:
         if cfg.model == 'tesan':
             batch_num, current_epoch, current_batch = batch[2], batch[3], batch[4]
@@ -103,11 +111,13 @@ def train():
         if tmp_epoch != current_epoch:
             epoch_end = time.perf_counter()
             epoch_loss /= tmp_cur_batch
-            print_eval(tmp_epoch, epoch_loss, evaluator,sess, (epoch_end - epoch_start))
-            total_duration += (epoch_end - epoch_start)
+            cpu_time, memory_used = print_eval(tmp_epoch, epoch_loss, evaluator,sess, process)
+            total_cpu = cpu_time
+            memory_usage.append(memory_used)
+            # print('avg mem: % 7.2f (MB)' % ((sum(memory_usage) / 1024 / 1024) / len(memory_usage)))
+            # print('max mem: % 7.2f (MB)' % ((max(memory_usage) / 1024 / 1024)))
             epoch_loss = 0
             tmp_epoch = current_epoch
-            epoch_start = time.perf_counter()
         else:
             tmp_cur_batch = current_batch
 
@@ -127,31 +137,30 @@ def train():
         _, loss_val = sess.run([model.optimizer, model.loss], feed_dict=feed_dict)
         epoch_loss += loss_val
 
-
-    log_str = "\tTarget\t\t 32.84%\t 58.33%\t 66.10%\t 43.80%"
-    logging.add(log_str)
-
-    logging.add('total cpu: %s' % pd.to_timedelta(total_duration, unit='seconds'))
+    logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
+    logging.add('avg mem: % 7.2f (MB)' % ((sum(memory_usage)/1024/1024)/len(memory_usage)))
+    logging.add('max mem: % 7.2f (MB)' % ((max(memory_usage)/1024/1024)))
 
     logging.done()
 
-def print_eval(stage, loss, evaluator, sess, duration_ns):
+def print_eval(stage, loss, evaluator, sess, process):
     icd_weigh_scores = evaluator.get_clustering_nmi(sess, 'ICD')
     ccs_weigh_scores = evaluator.get_clustering_nmi(sess, 'CCS')
 
     icd_nns = evaluator.get_nns_p_at_top_k(sess, 'ICD')
     ccs_nns = evaluator.get_nns_p_at_top_k(sess, 'CCS')
 
+    cpu_time = process.cpu_times().user + psutil.cpu_times().system
+    memory_used = process.memory_info().vms
     if cfg.globals["verbose"]:
-        if stage==0:
-            header = "\t%s\tLoss\tNMI ICD\tNMI CCS\tNNS P@%s Score ICD\tNNS P@%s Score CCS\tDuration" % ("epoch", cfg.evaluation["top_k"], cfg.evaluation["top_k"])
-            logging.add(header)
-        log_str = "\t% 3d\t% 6.3f\t% 5.2f%%\t% 5.2f%%\t% 5.2f%%\t% 5.2f%%\t (%s)" % (stage, loss, icd_weigh_scores * 100, ccs_weigh_scores * 100, icd_nns * 100, ccs_nns * 100, pd.to_timedelta(duration_ns, unit='seconds'))
+        log_str = "\t% 3d\t% 6.3f\t% 5.2f%%\t% 5.2f%%\t% 5.2f%%\t% 5.2f%%\t% 7.2f\t% 7.2f" % \
+                  (stage, loss, icd_weigh_scores * 100, ccs_weigh_scores * 100, icd_nns * 100, ccs_nns * 100, cpu_time, memory_used/1024/1024)
         logging.add(log_str)
     else:
-        log_str = "weight: %s %s %s %s %s" % (icd_weigh_scores, ccs_weigh_scores, icd_nns, ccs_nns, pd.to_timedelta(duration_ns, unit='seconds'))
+        log_str = "weight: %s %s %s %s %s %s" % (icd_weigh_scores, ccs_weigh_scores, icd_nns, ccs_nns, cpu_time, memory_used)
         logging.add(log_str)
 
+    return cpu_time, memory_used
 
 def log_config():
     logging.add()
