@@ -1,7 +1,6 @@
 {
         "globals" : {
                 "mode": "train",
-                "task": "prediction",
                 "gpu": 0,
                 "gpu_mem": null,
                 "verbose": true,
@@ -24,27 +23,27 @@
         },
         "models": {
                 "tesan" : {
-                         "vect_file":"outputs/concept_embedding/tasks/embedding/tesan/vects/mimic3_model_tesan_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/tesan/vects/mimic3_model_tesan_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
                 "tesa" : {
-                         "vect_file":"outputs/concept_embedding/tasks/embedding/tesa/vects/mimic3_model_tesa_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/tesa/vects/mimic3_model_tesa_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
                 "delta" : {
-                         "vect_file":"outputs/concept_embedding/tasks/embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/delta/vects/mimic3_model_delta_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
                 "sa" : {
-                         "vect_file":"outputs/concept_embedding/tasks/embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/sa/vects/mimic3_model_sa_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
                 "normal" : {
-                         "vect_file":"outputs/concept_embedding/tasks/embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/normal/vects/mimic3_model_normal_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
                 "cbow" : {
-                         "vect_file":"outputs/concept_embedding/tasks/embedding/cbow/vects/mimic3_model_cbow_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/cbow/vects/mimic3_model_cbow_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
 

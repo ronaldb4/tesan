@@ -1,7 +1,6 @@
 {
         "globals" : {
                 "mode": "train",
-                "task": "embedding",
                 "gpu": 0,
                 "gpu_mem": null,
                 "verbose": true,

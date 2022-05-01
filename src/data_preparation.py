@@ -145,7 +145,7 @@ if __name__ == "__main__":
     # mimic_flag = False
     parser = argparse.ArgumentParser()
     parser.register('type', 'bool', (lambda x: x.lower() in ('True', "yes", "true", "t", "1")))
-    parser.add_argument('--data_source', type=str, default='cms', help='mimic or cms')
+    parser.add_argument('--data_source', type=str, default='mimic', help='mimic or cms')
     args = parser.parse_args()
 
     if args.data_source == 'mimic':
