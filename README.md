@@ -115,7 +115,7 @@ options are:
 
 The **configSet** parameter specifies the JSON file to be used to specify the hyper-parameters that define 
 the behavior of the both the model and the treatment of the data (the versions used to generate the metrics in 
-our paper are provided in the repository.)
+our paper are provided in the repository.) *For details on key hyperparameters, see the accompanying paper.*
 
 ### Step 3 - Train Mortality Prediction Models
 
