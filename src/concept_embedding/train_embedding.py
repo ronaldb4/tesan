@@ -114,7 +114,6 @@ def train():
             cpu_time, memory_used = print_eval(tmp_epoch, epoch_loss, evaluator,sess, process)
             total_cpu = cpu_time
             memory_usage.append(memory_used)
-
             epoch_loss = 0
             tmp_epoch = current_epoch
         else:
@@ -137,8 +136,8 @@ def train():
         epoch_loss += loss_val
 
     logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
-    logging.add('avg mem: % 7.2f' % sum(memory_usage/1024/1024)/len(memory_usage))
-    logging.add('max mem: % 7.2f' % max(memory_usage/1024/1024))
+    logging.add('avg mem: % 7.2f' % (sum(memory_usage)/1024/1024)/len(memory_usage))
+    logging.add('max mem: % 7.2f' % (max(memory_usage)/1024/1024))
 
     logging.done()
 
