@@ -53,28 +53,50 @@ class ConceptDataset(DatasetTemplate):
 
                 context_indices = [[word2[0], (word2[1] - word[1]).days] for pos2, word2
                                    in window_pos if (word2[0] is not None and pos2 != pos)]
+                #skipgram only
+                targetwords = [[word[0], 0]]
 
-                context_len = len(context_indices)
-                if context_len > 0:
-                    # if context length is less than two times actual window, and padding
-                    if context_len < 2 * actual_window:
-                        for i in range(2 * actual_window - context_len):
-                            context_indices.append([0, 0])
 
-                    intervals = np.zeros((2 * actual_window, 2 * actual_window))
-                    for i in range(2 * actual_window):
-                        for j in range(2 * actual_window):
-                            if i > j:
-                                code_i = context_indices[i][0]
-                                code_j = context_indices[j][0]
-                                interval_i = context_indices[i][1]
-                                interval_j = context_indices[j][1]
-                                if code_i > 0 and code_j > 0:
-                                    intervals[i, j] = np.abs(interval_i - interval_j) + 1
-                                    intervals[j, i] = np.abs(interval_i - interval_j) + 1
+                model = 'rest'
+                if model == 'rest':
+                    context_len = len(context_indices)
+                    if context_len > 0:
+                        # if context length is less than two times actual window, and padding
+                        # only for cbow
+                         if context_len < 2 * actual_window:
+                            for i in range(2 * actual_window - context_len):
+                                context_indices.append([0, 0])
 
-                    batches.append([np.array(context_indices, dtype=np.int32),
-                                    intervals, np.array([word[0]], dtype=np.int32)])
+                         intervals = np.zeros((2 * actual_window, 2 * actual_window))
+                         for i in range(2 * actual_window):
+                            for j in range(2 * actual_window):
+                                if i > j:
+                                    code_i = context_indices[i][0]
+                                    code_j = context_indices[j][0]
+                                    interval_i = context_indices[i][1]
+                                    interval_j = context_indices[j][1]
+                                    if code_i > 0 and code_j > 0:
+                                        intervals[i, j] = np.abs(interval_i - interval_j) + 1
+                                        intervals[j, i] = np.abs(interval_i - interval_j) + 1
+
+                         batches.append([np.array(context_indices, dtype=np.int32),
+                                        intervals, np.array([word[0]], dtype=np.int32)])
+                elif model == 'skip':
+                    # skipgram
+                    context_len = len(targetwords)
+
+                    if context_len > 0:
+                        if context_len < 2 * actual_window:
+                            for i in range(2 * actual_window - context_len):
+                                targetwords.append([0, 0])
+
+                        intervals = np.zeros((2 * actual_window, 2 * actual_window))
+
+                        # skip-gram
+                        for index in context_indices:
+                            batches.append([np.array(targetwords, dtype=np.int32), intervals,
+                                            np.array([index[0]], dtype=np.int32)])
+
 
         contexts = []
         intervals = []
