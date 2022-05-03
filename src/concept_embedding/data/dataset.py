@@ -53,11 +53,9 @@ class ConceptDataset(DatasetTemplate):
 
                 context_indices = [[word2[0], (word2[1] - word[1]).days] for pos2, word2
                                    in window_pos if (word2[0] is not None and pos2 != pos)]
-                #skipgram only
-                targetwords = [[word[0], 0]]
-
 
                 model = 'rest'
+                mode = "ablateintervals"
                 if model == 'rest':
                     context_len = len(context_indices)
                     if context_len > 0:
@@ -76,13 +74,19 @@ class ConceptDataset(DatasetTemplate):
                                     interval_i = context_indices[i][1]
                                     interval_j = context_indices[j][1]
                                     if code_i > 0 and code_j > 0:
-                                        intervals[i, j] = np.abs(interval_i - interval_j) + 1
-                                        intervals[j, i] = np.abs(interval_i - interval_j) + 1
+                                        if (mode == 'ablateintervals'):
+                                            randInt = random.randint(0, 1000)
+                                            intervals[i, j] = randInt
+                                            intervals[j, i] = randInt
+                                        else:
+                                            intervals[i, j] = np.abs(interval_i - interval_j) + 1
+                                            intervals[j, i] = np.abs(interval_i - interval_j) + 1
 
                          batches.append([np.array(context_indices, dtype=np.int32),
                                         intervals, np.array([word[0]], dtype=np.int32)])
                 elif model == 'skip':
                     # skipgram
+                    targetwords = [[word[0], 0]]
                     context_len = len(targetwords)
 
                     if context_len > 0:
