@@ -168,8 +168,8 @@ def train():
                 logging.add(log_str)
 
     logging.add('total cpu time: %s' % str(datetime.timedelta(seconds=total_cpu)))
-    logging.add('avg mem: % 7.2f' % sum(memory_usage/1024/1024)/len(memory_usage))
-    logging.add('max mem: % 7.2f' % max(memory_usage/1024/1024))
+    logging.add('avg mem: % 7.2f (MB)' % ((sum(memory_usage)/1024/1024)/len(memory_usage)))
+    logging.add('max mem: % 7.2f (MB)' % ((max(memory_usage)/1024/1024)))
 
     # # save patient vectors
     placehold = np.zeros((1, 100))

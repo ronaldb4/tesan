@@ -156,7 +156,8 @@ models are a critical input into the *mortality_prediction* models.
 
 #### Note: Execution Environment and Locally Installed Packages
 
-All model executions were performed within PyCharm with the following packages installed (not all are used by this project):
+All model executions were performed within PyCharm with the following packages installed (not all are necessarily used 
+by this project, but all are listed due to potential dependency chains):
 
 |Package              |Version|
 |---------------------|--------|
