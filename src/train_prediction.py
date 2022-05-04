@@ -6,7 +6,7 @@ import numpy as np
 from os.path import join
 import psutil
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import f1_score, auc
 
@@ -126,7 +126,7 @@ def train():
     logging.add('Begin predicting...')
 
     if cfg.globals["verbose"]:
-        header = "\tStep\tAccuracy\tPrecision\tSensitivity\tSpecificity\tF-score\tPR_AUC\tF1\tCPU\tMemory"
+        header = "\tStep\tLoss\tPR_AUC\tPR_ROC\tCPU\tMemory"
         logging.add(header)
 
     total_cpu = 0
@@ -137,31 +137,30 @@ def train():
         total_loss += loss_val
         global_steps += 1
 
-        if global_steps % 10000 == 0:
+        if global_steps % 1000 == 0:
             avg_loss = total_loss / 1000
-            log_str = "Average loss at step %s: %s " % (global_steps, avg_loss)
-            logging.add(log_str)
             total_loss = 0
+            # log_str = "Average loss at step %s: %s " % (global_steps, avg_loss)
+            # logging.add(log_str)
             dev_feed_dict = {model.inputs: data_set.test_patients,
                              model.labels: data_set.test_labels}
             accuracy, props, yhat = sess.run([model.accuracy, model.props, model.yhat], feed_dict=dev_feed_dict)
-            logging.add('validating the accuracy.....')
-            log_str = "accuracy: %s" % accuracy
-            logging.add(log_str)
-            logging.add('validating more metrics.....')
+            # logging.add('validating the accuracy.....')
+            # log_str = "accuracy: %s" % accuracy
+            # logging.add(log_str)
+            # logging.add('validating more metrics.....')
 
             cpu_time = process.cpu_times().user + psutil.cpu_times().system
             memory_used = process.memory_info().vms
             total_cpu = cpu_time
             memory_usage.append(memory_used)
 
-            metrics = metric_pred(data_set.test_labels, props, yhat)
+            metrics = metric_pred(data_set.test_labels, props, yhat, avg_loss, cfg.globals["verbose"])
 
             if cfg.globals["verbose"]:
                 #accuracy, precision, sensitivity, specificity, f_score, pr_auc, f1
-                log_str = "% 6d\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 3.2f%%\t% 7.2f\t% 7.2f" % \
-                          (global_steps, metrics[0]*100, metrics[1], metrics[2], metrics[3], metrics[4], metrics[5], metrics[6],
-                           cpu_time, memory_used / 1024 / 1024)
+                log_str = "% 6d\t% 6.4f\t%6.4f\t%6.4f\t% 7.2f\t% 7.2f" % \
+                          (global_steps, metrics[0], metrics[1], metrics[2], cpu_time, memory_used / 1024 / 1024)
                 logging.add(log_str)
             else:
                 log_str = "metrics: %s %s %s" % (metrics, cpu_time, memory_used)
@@ -207,7 +206,7 @@ def log_config():
         logging.add('\t%s: %s' % (key, value))
 
 
-def metric_pred(y_true, probs, y_pred):
+def metric_pred(y_true, probs, y_pred, loss, reported_only):
     [[TN, FP], [FN, TP]] = confusion_matrix(y_true, y_pred, labels=[0, 1]).astype(float)
     # print(TN, FP, FN, TP)
     accuracy = (TP + TN) / (TP + TN + FP + FN)
@@ -217,7 +216,7 @@ def metric_pred(y_true, probs, y_pred):
     f_score = 2 * TP / (2 * TP + FP + FN)
 
     # calculate AUC
-    # roc_auc = roc_auc_score(y_true, probs)
+    roc_auc = roc_auc_score(y_true, probs)
     # print('roc_auc: %.4f' % roc_auc)
     # calculate roc curve
     # fpr, tpr, thresholds = roc_curve(y_true, probs)
@@ -230,9 +229,10 @@ def metric_pred(y_true, probs, y_pred):
     # calculate precision-recall AUC
     pr_auc = auc(recall_curve, precision_curve)
 
-    return [accuracy, precision, sensitivity, specificity, f_score, pr_auc, f1]
+    if reported_only:
+        return [loss, pr_auc, roc_auc]
 
-    # return [accuracy, precision, sensitivity, specificity, f_score, roc_auc, pr_auc, f1]
+    return [accuracy, precision, sensitivity, specificity, f_score, roc_auc, pr_auc, f1]
 
 
 def main(_):
