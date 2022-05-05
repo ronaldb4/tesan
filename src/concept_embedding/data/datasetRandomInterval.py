@@ -6,9 +6,9 @@ from src.concept_embedding.data.__dataset_template__ import DatasetTemplate
 from src.utils.file import save_file,load_file
 
 
-class ConceptDataset(DatasetTemplate):
+class ConceptRandomIntervalDataset(DatasetTemplate):
     def __init__(self):
-        super(ConceptDataset, self).__init__()
+        super(ConceptRandomIntervalDataset, self).__init__()
         self.contexts = None
         self.intervals = None
         self.labels = None
@@ -57,23 +57,23 @@ class ConceptDataset(DatasetTemplate):
                 context_len = len(context_indices)
                 if context_len > 0:
                     # if context length is less than two times actual window, and padding
-                    if context_len < 2 * actual_window:
+                    # only for cbow
+                     if context_len < 2 * actual_window:
                         for i in range(2 * actual_window - context_len):
                             context_indices.append([0, 0])
 
-                    intervals = np.zeros((2 * actual_window, 2 * actual_window))
-                    for i in range(2 * actual_window):
+                     intervals = np.zeros((2 * actual_window, 2 * actual_window))
+                     for i in range(2 * actual_window):
                         for j in range(2 * actual_window):
                             if i > j:
                                 code_i = context_indices[i][0]
                                 code_j = context_indices[j][0]
-                                interval_i = context_indices[i][1]
-                                interval_j = context_indices[j][1]
                                 if code_i > 0 and code_j > 0:
-                                    intervals[i, j] = np.abs(interval_i - interval_j) + 1
-                                    intervals[j, i] = np.abs(interval_i - interval_j) + 1
+                                    randInt = random.randint(0, 1000)
+                                    intervals[i, j] = randInt
+                                    intervals[j, i] = randInt
 
-                    batches.append([np.array(context_indices, dtype=np.int32),
+                     batches.append([np.array(context_indices, dtype=np.int32),
                                     intervals, np.array([word[0]], dtype=np.int32)])
 
         contexts = []

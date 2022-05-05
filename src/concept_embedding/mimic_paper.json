@@ -54,11 +54,19 @@
                         ,"embedding_size":100
                         ,"activation":"relu"
                 },
+                "random_interval" : {
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                },
                 "cbow" : {
                          "num_negative_examples":10
                         ,"embedding_size":100
                 },
-
+                "skip_gram" : {
+                         "num_negative_examples":10
+                        ,"embedding_size":100
+                },
                 "fusion" : {
                         "THIS_MODEL_IS_BROKEN": true,
                          "num_negative_examples":10

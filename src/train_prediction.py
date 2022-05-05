@@ -15,12 +15,14 @@ from src.mortality_prediction.model.baseline.glove import GloveModel
 from src.mortality_prediction.model.baseline.mce import MCEModel
 from src.mortality_prediction.model.baseline.med2vec import Med2VecModel
 from src.mortality_prediction.model.baseline.sg import SGModel
+from src.mortality_prediction.model.baseline.skip_gram import SkipGramModel
 from src.mortality_prediction.model.baseline.raw import RawModel
 from src.mortality_prediction.model.ablation.tesa import TesaModel
 from src.mortality_prediction.model.proposed.tesan import TeSANModel
 from src.mortality_prediction.model.ablation.delta import DeltaModel
 from src.mortality_prediction.model.ablation.sa import SAModel
 from src.mortality_prediction.model.ablation.normal import NormalModel
+from src.mortality_prediction.model.ablation.random_interval import RandomIntervalModel
 from src.mortality_prediction.configs import cfg
 
 from src.utils.graph_handler import GraphHandler
@@ -90,11 +92,21 @@ def train():
             # Normal_Sa - Ablation Studies
             ##############################################################################
             model = NormalModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'random_interval':
+            ##############################################################################
+            # RandomInterval - Supplemental Ablation Studies
+            ##############################################################################
+            model = RandomIntervalModel(scope.name, data_set, cfg.modelParams)
         elif cfg.model == 'cbow':
             ##############################################################################
             # CBOW - Baseline Method
             ##############################################################################
             model = CBOWModel(scope.name, data_set, cfg.modelParams)
+        elif cfg.model == 'skip_gram':
+            ##############################################################################
+            # Skip-gram - Baseline Method - our version
+            ##############################################################################
+            model = SkipGramModel(scope.name, data_set, cfg.modelParams)
         elif cfg.model == 'sg':
             ##############################################################################
             # Skip-gram - Baseline Method

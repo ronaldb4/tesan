@@ -9,10 +9,12 @@ import psutil
 from src.concept_embedding.configs import cfg
 
 from src.concept_embedding.model.baseline.cbow import CBOWModel
+from src.concept_embedding.model.baseline.skip_gram import SkipGramModel
 from src.concept_embedding.model.ablation.delta import DeltaModel
 from src.concept_embedding.model.fusion import FusionModel
 from src.concept_embedding.model.ablation.normal import NormalModel
 from src.concept_embedding.model.ablation.sa import SAModel
+from src.concept_embedding.model.ablation.random_interval import RandomIntervalModel
 from src.concept_embedding.model.baseline.ta_attn import TaAttnModel
 from src.concept_embedding.model.ablation.tesa import TesaNonDateModel
 from src.concept_embedding.model.proposed.tesan import TeSANModel
@@ -20,6 +22,8 @@ from src.concept_embedding.model.proposed.tesan import TeSANModel
 from src.utils.graph_handler import GraphHandler
 from src.utils.record_log import RecordLog
 from src.concept_embedding.evaluation.evaluation import ConceptEvaluation as Evaluator
+from src.concept_embedding.data.datasetRandomInterval import  ConceptRandomIntervalDataset as CRandIntDataset
+from src.concept_embedding.data.datasetSkipGram import  ConceptSkipDataset as CSkipDataset
 from src.concept_embedding.data.dataset import  ConceptDataset as CDataset
 from src.concept_embedding.data.datasetEncodeDate import ConceptAndDateDataset as CDDataset
 
@@ -42,7 +46,12 @@ def train():
         data_set.build_dict4date()
         data_set.load_data()
     else:
-        data_set = CDataset()
+        if cfg.model == 'skip_gram':
+            data_set = CSkipDataset()
+        elif cfg.model == 'random_interval':
+            data_set = CRandIntDataset()
+        else:
+            data_set = CDataset()
         data_set.initialize(cfg.data)
         data_set.prepare_data()
         data_set.build_dictionary()
@@ -70,10 +79,14 @@ def train():
             model = SAModel(scope.name, data_set)
         elif cfg.model == 'normal': #Normal_SA or something else
             model = NormalModel(scope.name, data_set)
+        elif cfg.model == 'random_interval':  # supplementary
+            model = RandomIntervalModel(scope.name, data_set)
 
         #baseline models
         elif cfg.model == 'cbow':
             model = CBOWModel(scope.name, data_set)
+        elif cfg.model == 'skip_gram':
+            model = SkipGramModel(scope.name, data_set)
 
         # ????
         elif cfg.model == 'ta_attn':
