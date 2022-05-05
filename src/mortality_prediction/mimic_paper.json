@@ -43,7 +43,7 @@
                         ,"hidden_units": 100
                 },
                 "random_interval" : {
-                         "vect_file":"outputs/concept_embedding/sa/vects/mimic3_model_random_interval_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/random_interval/vects/mimic3_model_random_interval_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
                 "cbow" : {
@@ -51,7 +51,7 @@
                         ,"hidden_units": 100
                 },
                 "skip_gram" : {
-                         "vect_file":"outputs/concept_embedding/cbow/vects/mimic3_model_skip_gram_epoch_30_sk_6.vect"
+                         "vect_file":"outputs/concept_embedding/skip_gram/vects/mimic3_model_skip_gram_epoch_30_sk_6.vect"
                         ,"hidden_units": 100
                 },
 
