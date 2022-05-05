@@ -108,14 +108,14 @@ python train_embedding.py --model tesan --configSet concept_embedding/mimic_pape
 The **model** parameter specifies the model being used to generate embedings. The supported/tested
 options are:
 
-| Parameter Value | Model |
-|-----------------| ----- |
-| tesan           | TeSAN |
-| cbow            | CBOW |
+| Parameter Value | Model                   |
+|-----------------|-------------------------|
+| tesan           | TeSAN                   |
+| cbow            | CBOW                    |
+| normal          | Normal Self-Attention   |
+| delta           | Interval                |
 | sa              | Multiple Self-Attention |
-| delta           | Interval |
-| multi           | Multiple Self-Attention |
-| tesa | TeSA |
+| tesa            | TeSA                    |
 
 The **configSet** parameter specifies the JSON file to be used to specify the hyper-parameters that define 
 the behavior of the both the model and the treatment of the data (the versions used to generate the metrics in 
