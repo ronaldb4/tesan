@@ -134,12 +134,10 @@ class TesaNonDateModel(ModelTemplate):
             context_fusion = multi_dimensional_attention(cntxt_embed, self.context_mask, is_train=True)
         return context_fusion, code_embeddings
 
-def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1.,
-                                is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
+def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1., is_train=None, wd=0., activation='relu', is_scale=True):
 
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
-    ivec = hn or ivec
     with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.linalg.tensor_diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
@@ -182,13 +180,13 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
             attn_result = tf.reduce_sum(attn_score * rep_map_tile, 2)  # bs,sl,vec
 
         with tf.compat.v1.variable_scope('output'):
-            o_bias = tf.compat.v1.get_variable('o_bias', [ivec], tf.float32, tf.constant_initializer(0.))
+            o_bias = tf.compat.v1.get_variable('o_bias',[ivec], tf.float32, tf.constant_initializer(0.))
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
                 linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
                 o_bias)
-            output = fusion_gate * rep_map + (1 - fusion_gate) * attn_result
-            output = mask_for_high_rank(output, rep_mask)  # bs,sl,vec
+            output = fusion_gate * rep_map + (1-fusion_gate) * attn_result
+            output = mask_for_high_rank(output, rep_mask)# bs,sl,vec
 
         return output

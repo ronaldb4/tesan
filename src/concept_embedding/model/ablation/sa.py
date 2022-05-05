@@ -121,7 +121,7 @@ class SAModel(ModelTemplate):
                                                     rep_mask=self.context_mask,
                                                     is_train=True,
                                                     activation=self.activation,
-                                                    is_scale = self.is_scale)
+                                                    is_scale=self.is_scale)
 
             # attention pooling
             context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
