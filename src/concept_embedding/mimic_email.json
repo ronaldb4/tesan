@@ -23,13 +23,14 @@
                 ,"only_dx_flag":true
                 ,"reduced_window":true
                 ,"num_steps":null
-                ,"is_date_encoding":false
         },
-        "tesa" : {
-                 "num_negative_examples":10
-                ,"embedding_size":200
-                ,"activation":"relu"
-                ,"is_scale":true
+        "models": {
+                "tesa": {
+                        "num_negative_examples": 10,
+                        "embedding_size": 200,
+                        "activation": "relu",
+                        "is_scale": true
+                }
         }
-}
+},
 
