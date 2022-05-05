@@ -184,8 +184,7 @@ def temporal_delta_sa_with_dense(rep_tensor, rep_mask, delta_tensor, keep_prob=1
             # input gate
             fusion_gate = tf.nn.sigmoid(
                 linear(rep_map, ivec, True, 0., 'linear_fusion_i', False, wd, keep_prob, is_train) +
-                linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) +
-                o_bias)
+                linear(attn_result, ivec, True, 0., 'linear_fusion_a', False, wd, keep_prob, is_train) + o_bias)
             output = fusion_gate * rep_map + (1-fusion_gate) * attn_result
             output = mask_for_high_rank(output, rep_mask)# bs,sl,vec
 
