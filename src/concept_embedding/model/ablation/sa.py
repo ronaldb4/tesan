@@ -9,7 +9,7 @@ from src.concept_embedding.model._context_fusion_ import multi_dimensional_atten
 
 
 ##############################################################################
-# Multi_Sa - Ablation Studies ??? by elimination a little less certain ???
+# Multi_Sa - Ablation Studies
 ##############################################################################
 class SAModel(ModelTemplate):
     def __init__(self,scope, dataset):
@@ -125,14 +125,13 @@ class SAModel(ModelTemplate):
 
             # attention pooling
             context_fusion = multi_dimensional_attention(cntxt_embed,self.context_mask,is_train=True)
+
         return context_fusion, code_embeddings
 
-def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1.,
-                                     is_train=None, wd=0., activation='relu', hn=None, is_scale=True):
+def self_attention_with_dense(rep_tensor, rep_mask, keep_prob=1., is_train=None, wd=0., activation='relu', is_scale=True):
 
     batch_size, code_len, vec_size = tf.shape(rep_tensor)[0], tf.shape(rep_tensor)[1], tf.shape(rep_tensor)[2]
     ivec = rep_tensor.get_shape().as_list()[2]
-    ivec = hn or ivec
     with tf.compat.v1.variable_scope('temporal_attention'):
         # mask generation
         attn_mask = tf.cast(tf.linalg.tensor_diag(- tf.ones([code_len], tf.int32)) + 1, tf.bool)  # batch_size, code_len, code_len
