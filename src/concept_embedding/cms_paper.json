@@ -58,6 +58,16 @@
                          "num_negative_examples":5
                         ,"embedding_size":100
                 },
+                "skip_gram" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                },
+                "random_interval" : {
+                         "num_negative_examples":5
+                        ,"embedding_size":100
+                        ,"activation":"relu"
+                        ,"is_scale":true
+               },
 
                 "fusion" : {
                         "THIS_MODEL_IS_BROKEN": true,
