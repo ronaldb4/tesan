@@ -116,6 +116,10 @@ options are:
 | delta           | Interval                |
 | sa              | Multiple Self-Attention |
 | tesa            | TeSA                    |
+| skip_gram       | Skip-Gram|
+| random_interval | Random-Interval Ablation|
+
+
 
 The **configSet** parameter specifies the JSON file to be used to specify the hyper-parameters that define 
 the behavior of the both the model and the treatment of the data (the versions used to generate the metrics in 
