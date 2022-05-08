@@ -104,6 +104,8 @@ def train():
     tmp_epoch = 0
     tmp_cur_batch = 0
 
+    log_config()
+
     logging.add()
     logging.add('Begin training...')
     sample_batches = data_set.generate_batch(num_steps)
@@ -176,6 +178,7 @@ def print_eval(stage, loss, evaluator, sess, process):
     return cpu_time, memory_used
 
 def log_config():
+    logging.add('model parameters:--------------------')
     logging.add()
     logging.add('execution config')
     for key,value in cfg.globals.items():

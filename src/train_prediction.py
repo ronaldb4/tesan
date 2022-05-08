@@ -134,6 +134,9 @@ def train():
     # evaluator = Evaluator(model,logging)
     global_steps = 0
     total_loss = 0
+
+    log_config()
+
     logging.add()
     logging.add('Begin predicting...')
 
@@ -198,6 +201,7 @@ def train():
 
 
 def log_config():
+    logging.add('model parameters:--------------------')
     logging.add()
     logging.add('execution config')
     for key,value in cfg.globals.items():

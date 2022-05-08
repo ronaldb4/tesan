@@ -25,8 +25,6 @@ class RecordLog(object):
                             level = level)
 
         print("writing to log file ",path)
-        logging.info('model parameters:--------------------')
-        logging.info(cfg.log_name)
 
     def add(self, content = '-'*30, is_print = True):
         if is_print:
